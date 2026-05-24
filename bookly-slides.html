@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bookly AI Support Agent — SE Demo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;800&display=swap" rel="stylesheet">
+
+  <style>
+
+    /* ============================================
+       THEME VARIABLES — Electric Studio
+       Change these to retheme the whole deck
+       ============================================ */
+    :root {
+      --bg-white:      #ffffff;
+      --bg-dark:       #0a0a0a;
+      --bg-panel:      #111111;
+      --accent:        #4361ee;
+      --accent-dim:    rgba(67,97,238,0.12);
+      --accent-mid:    rgba(67,97,238,0.4);
+      --text-dark:     #0a0a0a;
+      --text-light:    #ffffff;
+      --text-muted:    rgba(255,255,255,0.55);
+      --text-muted-dk: #888888;
+      --border-light:  rgba(0,0,0,0.08);
+      --border-dark:   rgba(255,255,255,0.1);
+      --font:          'Manrope', sans-serif;
+
+      /* Typography — all clamp() */
+      --title-size:    clamp(1.8rem, 5.5vw, 4.8rem);
+      --h2-size:       clamp(1.3rem, 3.5vw, 2.8rem);
+      --h3-size:       clamp(0.95rem, 2vw, 1.5rem);
+      --body-size:     clamp(0.72rem, 1.3vw, 0.95rem);
+      --small-size:    clamp(0.58rem, 0.9vw, 0.72rem);
+      --kicker-size:   clamp(0.58rem, 0.85vw, 0.7rem);
+
+      /* Spacing */
+      --slide-padding: clamp(1.5rem, 4vw, 4rem);
+      --gap:           clamp(0.6rem, 1.5vw, 1.5rem);
+      --gap-sm:        clamp(0.3rem, 0.8vw, 0.7rem);
+
+      --ease-expo:     cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+
+    /* ============================================
+       VIEWPORT BASE — mandatory responsive CSS
+       ============================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      overflow-x: hidden;
+    }
+    html {
+      scroll-snap-type: y mandatory;
+      scroll-behavior: smooth;
+    }
+    body { font-family: var(--font); }
+
+    .slide {
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+      scroll-snap-align: start;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    .slide-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      max-height: 100%;
+      overflow: hidden;
+      padding: var(--slide-padding);
+    }
+
+    @media (max-height: 700px) {
+      :root { --slide-padding: clamp(0.75rem,3vw,2rem); --h2-size: clamp(1rem,3vw,1.75rem); }
+    }
+    @media (max-height: 600px) {
+      :root { --slide-padding: clamp(0.5rem,2.5vw,1.5rem); --title-size: clamp(1.1rem,4vw,2rem); }
+      .nav-dots, .keyboard-hint { display: none; }
+    }
+    @media (max-height: 500px) {
+      :root { --slide-padding: clamp(0.4rem,2vw,1rem); --title-size: clamp(1rem,3.5vw,1.5rem); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.2s !important; }
+      html { scroll-behavior: auto; }
+    }
+
+
+    /* ============================================
+       PROGRESS BAR
+       ============================================ */
+    .progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 2px;
+      background: var(--accent);
+      z-index: 1000;
+      transition: width 0.4s ease;
+      width: 0%;
+    }
+
+
+    /* ============================================
+       NAV DOTS
+       ============================================ */
+    .nav-dots {
+      position: fixed;
+      right: clamp(1rem, 2vw, 1.5rem);
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      z-index: 100;
+    }
+    .nav-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: rgba(100,100,100,0.4);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: none;
+      padding: 0;
+    }
+    .nav-dot.active {
+      background: var(--accent);
+      transform: scale(1.5);
+    }
+
+
+    /* ============================================
+       REVEAL ANIMATIONS
+       Triggered by .visible class via IntersectionObserver
+       ============================================ */
+    .reveal {
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity 0.65s var(--ease-expo), transform 0.65s var(--ease-expo);
+    }
+    .reveal-left {
+      opacity: 0;
+      transform: translateX(-22px);
+      transition: opacity 0.65s var(--ease-expo), transform 0.65s var(--ease-expo);
+    }
+    .reveal-right {
+      opacity: 0;
+      transform: translateX(22px);
+      transition: opacity 0.65s var(--ease-expo), transform 0.65s var(--ease-expo);
+    }
+    .reveal-scale {
+      opacity: 0;
+      transform: scale(0.92);
+      transition: opacity 0.65s var(--ease-expo), transform 0.65s var(--ease-expo);
+    }
+    .slide.visible .reveal,
+    .slide.visible .reveal-left,
+    .slide.visible .reveal-right,
+    .slide.visible .reveal-scale {
+      opacity: 1;
+      transform: none;
+    }
+
+    /* Stagger delays */
+    .stagger > *:nth-child(1) { transition-delay: 0.08s; }
+    .stagger > *:nth-child(2) { transition-delay: 0.18s; }
+    .stagger > *:nth-child(3) { transition-delay: 0.28s; }
+    .stagger > *:nth-child(4) { transition-delay: 0.38s; }
+    .stagger > *:nth-child(5) { transition-delay: 0.48s; }
+
+
+    /* ============================================
+       SLIDE 1 — TITLE (Electric Studio split)
+       ============================================ */
+    .slide-title {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr;
+      flex-direction: unset;
+    }
+
+    /* Left panel — white */
+    .title-left {
+      background: var(--bg-white);
+      padding: var(--slide-padding);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+    /* Blue accent bar on right edge of left panel */
+    .title-left::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: var(--slide-padding);
+      bottom: var(--slide-padding);
+      width: 3px;
+      background: var(--accent);
+    }
+
+    .title-brand-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .title-brand {
+      font-size: var(--kicker-size);
+      font-weight: 800;
+      color: var(--text-dark);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+    .title-brand-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .title-main { margin-top: auto; margin-bottom: auto; }
+    .title-kicker {
+      font-size: var(--kicker-size);
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: clamp(0.5rem, 1.5vw, 1.2rem);
+    }
+    .title-heading {
+      font-size: var(--title-size);
+      font-weight: 800;
+      color: var(--text-dark);
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+    }
+    .title-heading .hl { color: var(--accent); }
+
+    .title-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--gap-sm);
+    }
+    .tag {
+      font-size: var(--small-size);
+      font-weight: 500;
+      color: var(--text-dark);
+      border: 1px solid var(--border-light);
+      padding: 4px 10px;
+      border-radius: 3px;
+      background: #f8f8f8;
+    }
+
+    /* Right panel — dark */
+    .title-right {
+      background: var(--bg-dark);
+      padding: var(--slide-padding);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+    /* Geometric circle accent */
+    .title-right::before {
+      content: '';
+      position: absolute;
+      bottom: calc(-1 * clamp(60px, 10vw, 100px));
+      right: calc(-1 * clamp(60px, 10vw, 100px));
+      width: clamp(180px, 28vw, 280px);
+      height: clamp(180px, 28vw, 280px);
+      border: 1.5px solid rgba(67, 97, 238, 0.25);
+      border-radius: 50%;
+      animation: rotateSlow 25s linear infinite;
+    }
+    .title-right::after {
+      content: '';
+      position: absolute;
+      bottom: calc(-1 * clamp(30px, 5vw, 50px));
+      right: calc(-1 * clamp(30px, 5vw, 50px));
+      width: clamp(100px, 16vw, 160px);
+      height: clamp(100px, 16vw, 160px);
+      border: 1px solid rgba(67, 97, 238, 0.45);
+      border-radius: 50%;
+    }
+    @keyframes rotateSlow { to { transform: rotate(360deg); } }
+
+    .title-slide-num {
+      font-size: var(--small-size);
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      font-weight: 500;
+    }
+    .title-right-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative; z-index: 1;
+    }
+    .title-right-label {
+      font-size: var(--kicker-size);
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: clamp(0.75rem, 2vw, 1.5rem);
+    }
+    .title-right-desc {
+      font-size: var(--body-size);
+      color: var(--text-muted);
+      line-height: 1.7;
+      max-width: 340px;
+    }
+    .title-right-big {
+      font-size: clamp(5rem, 14vw, 11rem);
+      font-weight: 800;
+      color: rgba(255,255,255,0.04);
+      line-height: 1;
+      letter-spacing: -0.04em;
+      position: absolute;
+      top: clamp(1rem, 3vw, 2rem);
+      left: var(--slide-padding);
+    }
+    .title-right-dot {
+      width: clamp(28px, 3.5vw, 40px);
+      height: clamp(28px, 3.5vw, 40px);
+      border-radius: 50%;
+      background: var(--accent);
+      position: relative; z-index: 1;
+    }
+
+
+    /* ============================================
+       SLIDE 2 — THESIS (split panel)
+       ============================================ */
+    .slide-thesis {
+      display: grid !important;
+      grid-template-columns: 52% 48%;
+      flex-direction: unset;
+    }
+
+    .thesis-left {
+      background: var(--bg-white);
+      padding: var(--slide-padding);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+    .thesis-left::after {
+      content: '';
+      position: absolute;
+      right: 0; top: var(--slide-padding); bottom: var(--slide-padding);
+      width: 3px;
+      background: var(--accent);
+    }
+    .thesis-kicker {
+      font-size: var(--kicker-size);
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    .thesis-statement {
+      font-size: clamp(1.3rem, 3.2vw, 2.6rem);
+      font-weight: 800;
+      color: var(--text-dark);
+      line-height: 1.05;
+      letter-spacing: -0.025em;
+    }
+    .thesis-statement .hl { color: var(--accent); }
+    .thesis-support {
+      font-size: var(--body-size);
+      color: #555;
+      line-height: 1.65;
+      max-width: 420px;
+    }
+    .thesis-slide-num {
+      font-size: var(--small-size);
+      color: var(--text-muted-dk);
+    }
+
+    .thesis-right {
+      background: var(--bg-dark);
+      padding: var(--slide-padding);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: clamp(1.2rem, 3vw, 2.2rem);
+      position: relative;
+      overflow: hidden;
+    }
+    .thesis-right::before {
+      content: '';
+      position: absolute;
+      top: calc(-1 * clamp(60px,10vw,100px));
+      left: calc(-1 * clamp(60px,10vw,100px));
+      width: clamp(180px,28vw,260px);
+      height: clamp(180px,28vw,260px);
+      border: 1.5px solid rgba(67,97,238,0.15);
+      border-radius: 50%;
+    }
+    .thesis-proof-label {
+      font-size: var(--kicker-size);
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .thesis-proofs {
+      display: flex;
+      flex-direction: column;
+      gap: clamp(0.9rem, 2vw, 1.5rem);
+    }
+    .thesis-proof {
+      display: flex;
+      gap: clamp(0.75rem, 1.5vw, 1.2rem);
+      align-items: flex-start;
+    }
+    .thesis-proof-bar {
+      width: 3px;
+      min-height: 100%;
+      background: var(--accent);
+      border-radius: 2px;
+      flex-shrink: 0;
+      margin-top: 3px;
+      align-self: stretch;
+    }
+    .thesis-proof-belief {
+      font-size: var(--body-size);
+      font-weight: 700;
+      color: var(--text-light);
+      margin-bottom: 3px;
+    }
+    .thesis-proof-impl {
+      font-size: var(--small-size);
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+
+    /* ============================================
+       SLIDE 3 — THE PROBLEM
+       ============================================ */
+    .slide-problem { background: var(--bg-white); }
+
+    .slide-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: clamp(1rem, 3vw, 2.5rem);
+    }
+    .slide-label {
+      font-size: var(--kicker-size);
+      font-weight: 700;
+      color: var(--text-dark);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+    .slide-num-label {
+      font-size: var(--small-size);
+      color: var(--text-muted-dk);
+    }
+    .slide-title-text {
+      font-size: var(--h2-size);
+      font-weight: 800;
+      color: var(--text-dark);
+      line-height: 1.05;
+      letter-spacing: -0.025em;
+      margin-bottom: clamp(0.4rem, 1vw, 0.8rem);
+    }
+    .slide-subtitle {
+      font-size: var(--body-size);
+      color: var(--text-muted-dk);
+      margin-bottom: clamp(1rem, 3vw, 2rem);
+    }
+
+    /* 2×2 stat cards */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(0.6rem, 1.5vw, 1.2rem);
+      max-height: min(65vh, 500px);
+    }
+    .stat-card {
+      background: #fafafa;
+      border-radius: 8px;
+      padding: clamp(0.9rem, 2.5vw, 1.8rem);
+      border-left: 3px solid var(--accent);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .stat-num {
+      font-size: clamp(1.6rem, 4vw, 3.2rem);
+      font-weight: 800;
+      color: var(--text-dark);
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+    .stat-desc {
+      font-size: var(--body-size);
+      color: #555;
+      margin-top: clamp(0.4rem, 1vw, 0.8rem);
+      line-height: 1.5;
+    }
+    .stat-label {
+      font-size: var(--small-size);
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: clamp(0.3rem, 0.8vw, 0.6rem);
+    }
+
+
+    /* ============================================
+       SLIDE 3 — ARCHITECTURE (split layout)
+       ============================================ */
+    .slide-arch {
+      display: grid !important;
+      grid-template-columns: 38% 62%;
+      flex-direction: unset;
+      background: var(--bg-white);
+    }
+
+    /* Left: description */
+    .arch-left {
+      background: var(--bg-dark);
+      padding: var(--slide-padding);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .arch-left::after {
+      content: '';
+      position: absolute;
+      right: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--accent);
+    }
+    /* Subtle grid bg on dark panel */
+    .arch-left-bg {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(67,97,238,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(67,97,238,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+    .arch-left-content { position: relative; z-index: 1; }
+    .arch-left-kicker {
+      font-size: var(--kicker-size);
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: clamp(0.6rem, 1.5vw, 1.2rem);
+    }
+    .arch-left-title {
+      font-size: var(--h2-size);
+      font-weight: 800;
+      color: var(--text-light);
+      line-height: 1.05;
+      letter-spacing: -0.025em;
+      margin-bottom: clamp(0.8rem, 2vw, 1.5rem);
+    }
+    .arch-left-points {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: var(--gap-sm);
+    }
+    .arch-left-points li {
+      font-size: var(--body-size);
+      color: var(--text-muted);
+      line-height: 1.55;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .arch-left-points li::before {
+      content: '';
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+      margin-top: 0.45em;
+    }
+
+    /* Right: flow diagram */
+    .arch-right {
+      background: var(--bg-white);
+      padding: var(--slide-padding);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: clamp(1.2rem, 3vw, 2.5rem);
+    }
+    .arch-right-label {
+      font-size: var(--kicker-size);
+      font-weight: 600;
+      color: var(--text-muted-dk);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: clamp(0.4rem, 1vw, 0.8rem);
+      flex-wrap: nowrap;
+    }
+    .flow-box {
+      background: #f8f8f8;
+      border-radius: 6px;
+      padding: clamp(0.5rem, 1.5vw, 1rem) clamp(0.6rem, 1.5vw, 1.2rem);
+      text-align: center;
+      flex: 1;
+      border: 1px solid var(--border-light);
+    }
+    .flow-box.accent-box {
+      background: var(--bg-dark);
+      border-color: var(--bg-dark);
+    }
+    .flow-box-label {
+      font-size: clamp(0.5rem, 0.75vw, 0.62rem);
+      font-weight: 600;
+      color: var(--text-muted-dk);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+    }
+    .flow-box.accent-box .flow-box-label { color: rgba(255,255,255,0.4); }
+    .flow-box-name {
+      font-size: clamp(0.65rem, 1vw, 0.82rem);
+      font-weight: 800;
+      color: var(--text-dark);
+    }
+    .flow-box.accent-box .flow-box-name { color: #fff; }
+    .flow-box-sub {
+      font-size: clamp(0.5rem, 0.72vw, 0.6rem);
+      color: var(--text-muted-dk);
+      margin-top: 3px;
+    }
+    .flow-box.accent-box .flow-box-sub { color: rgba(255,255,255,0.35); }
+    .flow-arrow {
+      font-size: clamp(0.8rem, 1.5vw, 1.2rem);
+      color: #ccc;
+      flex-shrink: 0;
+    }
+
+    .intent-row {
+      display: flex;
+      gap: var(--gap-sm);
+      flex-wrap: wrap;
+    }
+    .intent-pill {
+      font-size: var(--small-size);
+      font-weight: 600;
+      padding: 5px 14px;
+      border-radius: 20px;
+      border: 1.5px solid #ddd;
+      color: var(--text-muted-dk);
+    }
+    .intent-pill.on {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+
+    /* ============================================
+       SLIDE 4 — ENGINEERING DECISIONS (2×2 grid)
+       ============================================ */
+    .slide-decisions { background: var(--bg-white); }
+
+    .decision-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(0.7rem, 1.5vw, 1.2rem);
+      max-height: min(68vh, 520px);
+    }
+    .decision-card {
+      background: #fafafa;
+      border-radius: 8px;
+      padding: clamp(0.9rem, 2.5vw, 1.8rem);
+      border-top: 2px solid var(--accent);
+      display: flex;
+      flex-direction: column;
+      gap: var(--gap-sm);
+    }
+    .decision-icon {
+      font-size: clamp(1.1rem, 2vw, 1.5rem);
+    }
+    .decision-title {
+      font-size: clamp(0.78rem, 1.3vw, 0.95rem);
+      font-weight: 800;
+      color: var(--text-dark);
+      line-height: 1.2;
+    }
+    .decision-body {
+      font-size: var(--body-size);
+      color: #555;
+      line-height: 1.55;
+      flex: 1;
+    }
+
+
+    /* ============================================
+       SLIDE 5 — PRODUCTION (dark, two columns)
+       ============================================ */
+    .slide-prod { background: var(--bg-dark); }
+    .slide-prod .slide-title-text { color: var(--text-light); }
+    .slide-prod .slide-subtitle    { color: var(--text-muted); }
+    .slide-prod .slide-label       { color: rgba(255,255,255,0.5); }
+    .slide-prod .slide-num-label   { color: rgba(255,255,255,0.3); }
+
+    .prod-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(1.5rem, 4vw, 4rem);
+      max-height: min(68vh, 520px);
+    }
+    .prod-col-label {
+      font-size: var(--kicker-size);
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: clamp(0.6rem, 1.5vw, 1.2rem);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .prod-col-label .dot-label {
+      width: 7px; height: 7px; border-radius: 50%;
+    }
+    .col-built .prod-col-label { color: #10b981; }
+    .col-built .prod-col-label .dot-label { background: #10b981; }
+    .col-next  .prod-col-label { color: var(--accent); }
+    .col-next  .prod-col-label .dot-label { background: var(--accent); }
+
+    .prod-items {
+      display: flex;
+      flex-direction: column;
+      gap: clamp(0.6rem, 1.5vw, 1.1rem);
+    }
+    .prod-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .prod-item-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      margin-top: 0.42em;
+      flex-shrink: 0;
+    }
+    .col-built .prod-item-dot { background: #10b981; }
+    .col-next  .prod-item-dot { background: var(--accent); }
+    .prod-item-text {
+      font-size: var(--body-size);
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .prod-item-text strong { color: var(--text-light); font-weight: 600; }
+
+    /* Divider line between columns */
+    .prod-col-divider {
+      width: 1px;
+      background: rgba(255,255,255,0.08);
+      align-self: stretch;
+      display: none; /* handled by gap */
+    }
+
+    /* Subtle grid bg on dark slide */
+    .slide-prod .prod-bg {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(67,97,238,0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(67,97,238,0.035) 1px, transparent 1px);
+      background-size: 50px 50px;
+      pointer-events: none;
+    }
+
+    /* === PRODUCTION READINESS v2 — 3 pillar layout === */
+    .prod2-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: clamp(1rem, 2.5vw, 2rem);
+      margin-top: clamp(1rem, 2.5vw, 2rem);
+    }
+    .prod2-pillar {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 6px;
+      padding: clamp(1rem, 2vw, 1.6rem);
+      display: flex;
+      flex-direction: column;
+      gap: clamp(0.75rem, 1.5vw, 1.1rem);
+      position: relative;
+      overflow: hidden;
+    }
+    .prod2-pillar::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+    .prod2-pillar.p-cost::before   { background: var(--accent); }
+    .prod2-pillar.p-scale::before  { background: #10b981; }
+    .prod2-pillar.p-quality::before{ background: #f59e0b; }
+
+    .prod2-cat {
+      font-family: var(--font);
+      font-size: clamp(0.55rem, 0.85vw, 0.7rem);
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .prod2-pillar.p-cost   .prod2-cat { color: var(--accent); }
+    .prod2-pillar.p-scale  .prod2-cat { color: #10b981; }
+    .prod2-pillar.p-quality.prod2-cat { color: #f59e0b; }
+    .prod2-pillar.p-quality .prod2-cat { color: #f59e0b; }
+    .prod2-cat-dot {
+      width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+    }
+    .p-cost   .prod2-cat-dot { background: var(--accent); }
+    .p-scale  .prod2-cat-dot { background: #10b981; }
+    .p-quality .prod2-cat-dot { background: #f59e0b; }
+
+    .prod2-divider {
+      height: 1px;
+      background: rgba(255,255,255,0.07);
+    }
+    .prod2-items { display: flex; flex-direction: column; gap: clamp(0.6rem, 1.2vw, 1rem); }
+    .prod2-item-title {
+      font-family: var(--font);
+      font-size: clamp(0.7rem, 1.1vw, 0.88rem);
+      font-weight: 700;
+      color: var(--text-light);
+      margin-bottom: 3px;
+    }
+    .prod2-item-desc {
+      font-family: var(--font);
+      font-size: clamp(0.6rem, 0.9vw, 0.74rem);
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+
+    /* ============================================
+       INLINE EDITING
+       Hover top-left corner (80px zone) or press E
+       ============================================ */
+    .edit-hotzone {
+      position: fixed;
+      top: 0; left: 0;
+      width: 80px; height: 80px;
+      z-index: 10000;
+      cursor: default;
+    }
+    .edit-toggle {
+      position: fixed;
+      top: 14px; left: 14px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 7px 12px;
+      font-size: 12px;
+      font-family: var(--font);
+      font-weight: 600;
+      cursor: pointer;
+      z-index: 10001;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .edit-toggle.show,
+    .edit-toggle.active { opacity: 1; pointer-events: auto; }
+    .edit-toggle.active { background: #10b981; }
+
+    .edit-banner {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--accent);
+      color: #fff;
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: 500;
+      padding: 8px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10000;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(100%);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    .edit-banner.active { opacity: 1; pointer-events: auto; transform: none; }
+
+    body.edit-active [contenteditable] {
+      outline: 1.5px dashed rgba(67,97,238,0.5);
+      border-radius: 2px;
+      cursor: text;
+    }
+    body.edit-active [contenteditable]:focus { outline-color: var(--accent); background: rgba(67,97,238,0.04); }
+
+  </style>
+</head>
+<body>
+
+  <div class="progress-bar" id="progressBar"></div>
+  <nav class="nav-dots" id="navDots" aria-label="Slide navigation"></nav>
+
+  <!-- Inline editing controls -->
+  <div class="edit-hotzone" id="editHotzone"></div>
+  <button class="edit-toggle" id="editToggle" title="Edit mode (E)">✏ Edit</button>
+  <div class="edit-banner" id="editBanner">
+    <span>Edit mode — click any text to edit</span>
+    <span>Ctrl+S to save file &nbsp;·&nbsp; E to exit</span>
+  </div>
+
+
+  <!-- ============================================
+       SLIDE 1 — TITLE
+       ============================================ -->
+  <section class="slide slide-title" aria-label="Title slide">
+
+    <!-- Left panel: white -->
+    <div class="title-left">
+      <div class="title-brand-row reveal-left">
+        <span class="title-brand">Bookly</span>
+        <div class="title-brand-dot"></div>
+        <span class="title-brand" style="font-weight:400;letter-spacing:0.08em;color:#888">SE Demo 2026</span>
+      </div>
+
+      <div class="title-main">
+        <div class="title-kicker reveal-left" style="transition-delay:0.15s">Solutions Engineering</div>
+        <h1 class="title-heading reveal-left" style="transition-delay:0.25s">
+          AI<br><span class="hl">Support</span><br>Agent
+        </h1>
+      </div>
+
+      <div class="title-tags stagger reveal-left" style="transition-delay:0.45s">
+        <span class="tag">Claude Sonnet 4.6</span>
+        <span class="tag">Haiku 4.5</span>
+        <span class="tag">FastAPI</span>
+        <span class="tag">SSE Streaming</span>
+      </div>
+    </div>
+
+    <!-- Right panel: dark -->
+    <div class="title-right">
+      <div class="title-right-big">01</div>
+      <div class="title-slide-num reveal-right">01 / 05</div>
+
+
+      <div class="title-right-main">
+        <div class="title-right-label reveal-right" style="transition-delay:0.2s">What this is</div>
+        <p class="title-right-desc reveal-right" style="transition-delay:0.35s">
+          A fully working customer support agent for Bookly, an online bookstore — handling order status, returns, and policy questions with real-time streaming and identity verification.
+        </p>
+      </div>
+
+      <div class="title-right-dot reveal-scale" style="transition-delay:0.55s"></div>
+    </div>
+  </section>
+
+
+  <!-- ============================================
+       SLIDE 2 — THESIS
+       ============================================ -->
+  <section class="slide slide-thesis" aria-label="The Thesis">
+
+    <!-- Left: the argument -->
+    <div class="thesis-left">
+      <div class="thesis-kicker reveal">The Thesis</div>
+
+      <p class="thesis-support reveal" style="transition-delay:0.1s">
+        Customers expect instant, accurate, empathetic support — every time. Human teams struggle to deliver that consistently at scale. The question isn't whether to automate. It's how.
+      </p>
+
+      <div class="thesis-statement reveal" style="transition-delay:0.22s">
+        Great CX is a<br><span class="hl">reasoning</span><br>problem —<br>not a rules<br>problem.
+      </div>
+
+      <p class="thesis-support reveal" style="transition-delay:0.35s">
+        An agent that understands what a customer needs and figures out how to help — even when the situation is messy — is a fundamentally different thing than a bot that matches inputs to outputs.
+      </p>
+
+      <div class="thesis-slide-num reveal" style="transition-delay:0.45s">02 / 05</div>
+    </div>
+
+    <!-- Right: proof from the implementation -->
+    <div class="thesis-right">
+      <div class="thesis-proof-label reveal">How this build reflects it</div>
+      <div class="thesis-proofs stagger">
+
+        <div class="thesis-proof reveal">
+          <div class="thesis-proof-bar"></div>
+          <div>
+            <div class="thesis-proof-belief">Goals over scripts</div>
+            <div class="thesis-proof-impl">SOPs define what to achieve and what constraints to respect — not the steps to execute. Claude figures out the how.</div>
+          </div>
+        </div>
+
+        <div class="thesis-proof reveal">
+          <div class="thesis-proof-bar"></div>
+          <div>
+            <div class="thesis-proof-belief">Minimum context</div>
+            <div class="thesis-proof-impl">Each intent gets only the system prompt and tools it needs. Sonnet never sees tools that don't apply — reducing noise and hallucination risk.</div>
+          </div>
+        </div>
+
+        <div class="thesis-proof reveal">
+          <div class="thesis-proof-bar"></div>
+          <div>
+            <div class="thesis-proof-belief">Hard constraints only</div>
+            <div class="thesis-proof-impl">Auth before orders. Confirmation before action. These are the lines that can't be crossed — everything else, Claude owns.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================
+       SLIDE 3 — ARCHITECTURE
+       ============================================ -->
+  <section class="slide slide-arch" aria-label="Architecture">
+
+    <!-- Left: explanation -->
+    <div class="arch-left">
+      <div class="arch-left-bg"></div>
+      <div class="arch-left-content">
+        <div class="arch-left-kicker reveal-left">Under the hood</div>
+        <h2 class="arch-left-title reveal-left" style="transition-delay:0.12s">How It<br>Works</h2>
+        <ul class="arch-left-points stagger">
+          <li class="reveal-left">Haiku classifies intent on every message — fast and cheap</li>
+          <li class="reveal-left">Sonnet gets a scoped prompt and tool subset per intent</li>
+          <li class="reveal-left">Tools execute synchronously in the agent loop</li>
+          <li class="reveal-left">Response streams live via SSE with tool events</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Right: diagram -->
+    <div class="arch-right">
+      <div class="arch-right-label reveal">Flow</div>
+
+      <div class="flow reveal" style="transition-delay:0.15s">
+        <div class="flow-box">
+          <div class="flow-box-label">Input</div>
+          <div class="flow-box-name">User</div>
+          <div class="flow-box-sub">Message</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box">
+          <div class="flow-box-label">Classify</div>
+          <div class="flow-box-name">Haiku</div>
+          <div class="flow-box-sub">Intent router</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box accent-box">
+          <div class="flow-box-label">Agent</div>
+          <div class="flow-box-name">Sonnet</div>
+          <div class="flow-box-sub">Reason + Act</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box">
+          <div class="flow-box-label">Execute</div>
+          <div class="flow-box-name">Tools</div>
+          <div class="flow-box-sub">Auth / Orders</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box">
+          <div class="flow-box-label">Output</div>
+          <div class="flow-box-name">Stream</div>
+          <div class="flow-box-sub">Live SSE</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="arch-right-label reveal" style="transition-delay:0.3s">Intents</div>
+        <div class="intent-row reveal" style="transition-delay:0.4s">
+          <span class="intent-pill on">Order Status</span>
+          <span class="intent-pill on">Return / Refund</span>
+          <span class="intent-pill on">Policy</span>
+          <span class="intent-pill">Escalation</span>
+          <span class="intent-pill">Unclear</span>
+        </div>
+        <p style="font-size:var(--small-size);color:var(--text-muted-dk);margin-top:clamp(0.5rem,1.5vw,1rem)" class="reveal" style="transition-delay:0.5s">
+          Each intent owns its system prompt + tool subset — Sonnet never sees tools it doesn't need.
+        </p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================
+       SLIDE 4 — ENGINEERING DECISIONS
+       ============================================ -->
+  <section class="slide slide-decisions" aria-label="Engineering Decisions">
+    <div class="slide-content">
+
+      <div class="slide-header reveal">
+        <span class="slide-label">Bookly</span>
+        <span class="slide-num-label">04 / 05</span>
+
+      </div>
+
+      <h2 class="slide-title-text reveal" style="transition-delay:0.1s">Key Engineering Decisions</h2>
+      <p class="slide-subtitle reveal" style="transition-delay:0.18s">Every choice made deliberately — and why.</p>
+
+      <div class="decision-grid stagger">
+        <div class="decision-card reveal">
+          <div class="decision-icon">🔩</div>
+          <div class="decision-title">Raw SDK — No Framework</div>
+          <p class="decision-body">Direct Anthropic SDK calls with no abstraction layer. Full control over the tool loop, streaming, and error handling. No framework lock-in.</p>
+        </div>
+        <div class="decision-card reveal">
+          <div class="decision-icon">⚡</div>
+          <div class="decision-title">Two-Model Architecture</div>
+          <p class="decision-body">Haiku classifies intent — fast and cheap. Sonnet executes — powerful and accurate. Right model for the right job keeps cost and latency low.</p>
+        </div>
+        <div class="decision-card reveal">
+          <div class="decision-icon">🎯</div>
+          <div class="decision-title">Goal-Based SOPs</div>
+          <p class="decision-body">Prompts define what to achieve and what constraints to respect — not how to execute step by step. Claude reasons toward the goal, handling edge cases scripts can't anticipate.</p>
+        </div>
+        <div class="decision-card reveal">
+          <div class="decision-icon">🚿</div>
+          <div class="decision-title">Filler Text Suppression</div>
+          <p class="decision-body">Text before a tool call is buffered and discarded. Only the final, informed response streams to the customer — no noise, no filler.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ============================================
+       SLIDE 5 — PRODUCTION READINESS
+       ============================================ -->
+  <section class="slide slide-prod" aria-label="Production Readiness">
+    <div class="prod-bg"></div>
+    <div class="slide-content" style="position:relative;z-index:1">
+
+      <div class="slide-header reveal">
+        <span class="slide-label">Bookly</span>
+        <span class="slide-num-label">05 / 05</span>
+      </div>
+
+      <h2 class="slide-title-text reveal" style="transition-delay:0.1s">Scaling to Production</h2>
+      <p class="slide-subtitle reveal" style="transition-delay:0.18s">Six decisions that separate a demo from a system that ships.</p>
+
+      <div class="prod2-grid">
+
+        <!-- PILLAR 1: COST & LATENCY -->
+        <div class="prod2-pillar p-cost reveal" style="transition-delay:0.25s">
+          <div class="prod2-cat"><div class="prod2-cat-dot"></div>Cost &amp; Latency</div>
+          <div class="prod2-divider"></div>
+          <div class="prod2-items">
+            <div>
+              <div class="prod2-item-title">Prompt Caching</div>
+              <div class="prod2-item-desc">System prompt served from cache at 90% token discount — applies to every turn, every user.</div>
+            </div>
+            <div>
+              <div class="prod2-item-title">Async I/O</div>
+              <div class="prod2-item-desc">Non-blocking request handling — thousands of concurrent sessions on minimal threads.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PILLAR 2: SCALE & RELIABILITY -->
+        <div class="prod2-pillar p-scale reveal" style="transition-delay:0.35s">
+          <div class="prod2-cat"><div class="prod2-cat-dot"></div>Scale &amp; Reliability</div>
+          <div class="prod2-divider"></div>
+          <div class="prod2-items">
+            <div>
+              <div class="prod2-item-title">Persistent Sessions</div>
+              <div class="prod2-item-desc">Replace in-memory state with Redis — survives restarts, enables horizontal scaling.</div>
+            </div>
+            <div>
+              <div class="prod2-item-title">RAG Knowledge Base</div>
+              <div class="prod2-item-desc">Vector search over policy docs — grows without code changes, handles semantic queries.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PILLAR 3: QUALITY & TRUST -->
+        <div class="prod2-pillar p-quality reveal" style="transition-delay:0.45s">
+          <div class="prod2-cat"><div class="prod2-cat-dot"></div>Quality &amp; Trust</div>
+          <div class="prod2-divider"></div>
+          <div class="prod2-items">
+            <div>
+              <div class="prod2-item-title">Structured Observability</div>
+              <div class="prod2-item-desc">Trace every intent decision, tool latency, and token spend — debug failures before customers notice.</div>
+            </div>
+            <div>
+              <div class="prod2-item-title">LLM-as-a-Judge Evals</div>
+              <div class="prod2-item-desc">Automated eval pipeline scores responses on compliance, accuracy, and tone after every prompt change.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <script>
+    /* ============================================
+       SLIDE PRESENTATION CONTROLLER
+       ============================================ */
+    class SlidePresentation {
+      constructor() {
+        this.slides      = Array.from(document.querySelectorAll('.slide'));
+        this.progressBar = document.getElementById('progressBar');
+        this.navDotsEl   = document.getElementById('navDots');
+        this.current     = 0;
+
+        this.buildNavDots();
+        this.setupIntersectionObserver();
+        this.setupKeyboardNav();
+        this.setupTouchNav();
+        this.setupScrollProgress();
+        this.updateProgress(0);
+      }
+
+      buildNavDots() {
+        this.navDotsEl.innerHTML = '';
+        this.slides.forEach((_, i) => {
+          const btn = document.createElement('button');
+          btn.className = 'nav-dot' + (i === 0 ? ' active' : '');
+          btn.setAttribute('aria-label', `Go to slide ${i + 1}`);
+          btn.addEventListener('click', () => this.goTo(i));
+          this.navDotsEl.appendChild(btn);
+        });
+      }
+
+      updateProgress(idx) {
+        this.current = idx;
+        const pct = this.slides.length > 1
+          ? (idx / (this.slides.length - 1)) * 100 : 100;
+        this.progressBar.style.width = pct + '%';
+        this.navDotsEl.querySelectorAll('.nav-dot').forEach((d, i) => {
+          d.classList.toggle('active', i === idx);
+        });
+      }
+
+      goTo(idx) {
+        const clamped = Math.max(0, Math.min(idx, this.slides.length - 1));
+        this.slides[clamped].scrollIntoView({ behavior: 'smooth' });
+      }
+
+      setupIntersectionObserver() {
+        const io = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+              const idx = this.slides.indexOf(entry.target);
+              if (idx !== -1) this.updateProgress(idx);
+            }
+          });
+        }, { threshold: 0.55 });
+        this.slides.forEach(s => io.observe(s));
+      }
+
+      setupKeyboardNav() {
+        document.addEventListener('keydown', e => {
+          if (e.target.getAttribute('contenteditable')) return;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') {
+            e.preventDefault();
+            this.goTo(this.current + 1);
+          } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+            e.preventDefault();
+            this.goTo(this.current - 1);
+          } else if (e.key === 'Home') {
+            this.goTo(0);
+          } else if (e.key === 'End') {
+            this.goTo(this.slides.length - 1);
+          }
+        });
+
+        // Wheel nav (debounced)
+        let wheelTimer = null;
+        document.addEventListener('wheel', e => {
+          if (wheelTimer) return;
+          wheelTimer = setTimeout(() => { wheelTimer = null; }, 800);
+          this.goTo(this.current + (e.deltaY > 0 ? 1 : -1));
+        }, { passive: true });
+      }
+
+      setupTouchNav() {
+        let startY = null;
+        document.addEventListener('touchstart', e => { startY = e.touches[0].clientY; }, { passive: true });
+        document.addEventListener('touchend', e => {
+          if (startY === null) return;
+          const delta = startY - e.changedTouches[0].clientY;
+          if (Math.abs(delta) > 40) this.goTo(this.current + (delta > 0 ? 1 : -1));
+          startY = null;
+        }, { passive: true });
+      }
+
+      setupScrollProgress() {
+        // Handled by IntersectionObserver above
+      }
+    }
+
+
+    /* ============================================
+       INLINE EDITOR
+       ============================================ */
+    class InlineEditor {
+      constructor() {
+        this.isActive   = false;
+        this.toggle     = document.getElementById('editToggle');
+        this.banner     = document.getElementById('editBanner');
+        this.hotzone    = document.getElementById('editHotzone');
+        this.hideTimer  = null;
+        this.editables  = [];
+
+        this.setupHotzone();
+        this.setupKeyboard();
+        this.toggle.addEventListener('click', () => this.toggleEditMode());
+
+        // Ctrl+S to save
+        document.addEventListener('keydown', e => {
+          if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+            e.preventDefault();
+            if (this.isActive) this.exportFile();
+          }
+        });
+      }
+
+      setupHotzone() {
+        this.hotzone.addEventListener('mouseenter', () => {
+          clearTimeout(this.hideTimer);
+          this.toggle.classList.add('show');
+        });
+        this.hotzone.addEventListener('mouseleave', () => {
+          this.hideTimer = setTimeout(() => {
+            if (!this.isActive) this.toggle.classList.remove('show');
+          }, 400);
+        });
+        this.toggle.addEventListener('mouseenter', () => clearTimeout(this.hideTimer));
+        this.toggle.addEventListener('mouseleave', () => {
+          this.hideTimer = setTimeout(() => {
+            if (!this.isActive) this.toggle.classList.remove('show');
+          }, 400);
+        });
+        this.hotzone.addEventListener('click', () => this.toggleEditMode());
+      }
+
+      setupKeyboard() {
+        document.addEventListener('keydown', e => {
+          if ((e.key === 'e' || e.key === 'E') && !e.target.getAttribute('contenteditable')) {
+            this.toggleEditMode();
+          }
+        });
+      }
+
+      toggleEditMode() {
+        this.isActive = !this.isActive;
+        document.body.classList.toggle('edit-active', this.isActive);
+        this.toggle.classList.toggle('active', this.isActive);
+        this.toggle.textContent = this.isActive ? '✓ Done' : '✏ Edit';
+        this.banner.classList.toggle('active', this.isActive);
+
+        // Make text nodes editable
+        const selectors = [
+          '.title-heading', '.title-kicker', '.title-right-desc',
+          '.slide-title-text', '.slide-subtitle', '.stat-num', '.stat-desc', '.stat-label',
+          '.arch-left-title', '.arch-left-kicker', 'li',
+          '.decision-title', '.decision-body',
+          '.prod-item-text'
+        ];
+        if (this.isActive) {
+          this.editables = document.querySelectorAll(selectors.join(','));
+          this.editables.forEach(el => el.setAttribute('contenteditable', 'true'));
+        } else {
+          this.editables.forEach(el => el.removeAttribute('contenteditable'));
+          this.toggle.classList.add('show');
+        }
+      }
+
+      exportFile() {
+        // Strip edit state before capturing HTML
+        const editables = Array.from(document.querySelectorAll('[contenteditable]'));
+        editables.forEach(el => el.removeAttribute('contenteditable'));
+        document.body.classList.remove('edit-active');
+        this.toggle.classList.remove('active', 'show');
+        this.banner.classList.remove('active');
+
+        const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+
+        // Restore edit state
+        document.body.classList.add('edit-active');
+        editables.forEach(el => el.setAttribute('contenteditable', 'true'));
+        this.toggle.classList.add('active');
+        this.banner.classList.add('active');
+
+        const blob = new Blob([html], { type: 'text/html' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'bookly-slides.html';
+        a.click();
+        URL.revokeObjectURL(a.href);
+      }
+    }
+
+
+    /* ============================================
+       INIT
+       ============================================ */
+    const presentation = new SlidePresentation();
+    const editor = new InlineEditor();
+  </script>
+
+</body>
+</html>

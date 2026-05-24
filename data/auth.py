@@ -1,9 +1,9 @@
 # Mock customer directory — keyed by email or phone
 CUSTOMERS = {
     "sarah@gmail.com": {"name": "Sarah Chen", "orders": ["BK-2001", "BK-2002"]},
-    "555-0201":          {"name": "Sarah Chen", "orders": ["BK-2001", "BK-2002"]},
+    "415-696-3967":          {"name": "Sarah Chen", "orders": ["BK-2001", "BK-2002"]},
     "john@gmail.com": {"name": "John Doe", "orders": ["BK-3001", "BK-3002"]},
-    "555-0301":         {"name": "John Doe", "orders": ["BK-3001", "BK-3002"]},
+    "332-275-3252":         {"name": "John Doe", "orders": ["BK-3001", "BK-3002"]},
 }
 
 # In-memory OTP store: {contact: "pending"}

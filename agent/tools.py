@@ -143,4 +143,9 @@ def execute_tool(name: str, inputs: dict) -> str:
     handler = _TOOL_MAP.get(name)
     if not handler:
         return f"Unknown tool: {name}"
-    return handler(inputs)
+    try:
+        return handler(inputs)
+    except KeyError as e:
+        return f"Error: missing required input {e}. Please retry with the correct parameters."
+    except Exception as e:
+        return f"Error: {e}. Please retry."

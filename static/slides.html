@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Bookly AI Support Agent — Pitch Deck</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/theme/white.css">
+  <style>
+    :root {
+      --brand: #1a1a1a;
+      --accent: #3b82f6;
+      --muted: #6b7280;
+      --light: #f4f4f4;
+      --green: #10b981;
+    }
+
+    .reveal { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    .reveal h1, .reveal h2, .reveal h3 { font-weight: 700; letter-spacing: -0.02em; color: var(--brand); text-transform: none; }
+    .reveal h2 { font-size: 1.8em; }
+    .reveal p, .reveal li { color: #333; line-height: 1.6; }
+    .reveal ul { list-style: none; padding: 0; }
+    .reveal ul li::before { content: "—"; margin-right: 10px; color: var(--muted); }
+    .reveal section { padding: 0 60px; }
+
+    /* ── Title slide ── */
+    .slide-title { background: var(--brand) !important; }
+    .slide-title h1 { color: #fff; font-size: 2.2em; margin-top: 16px; }
+    .slide-title p  { color: rgba(255,255,255,0.6); font-size: 0.95em; margin-top: 8px; }
+    .slide-title .brand-row { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 8px; }
+    .slide-title .brand-label { color: rgba(255,255,255,0.5); font-size: 0.85em; letter-spacing: 0.08em; text-transform: uppercase; }
+    .chip-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 28px; }
+    .chip {
+      background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.75);
+      border-radius: 20px; padding: 5px 14px; font-size: 0.72em; letter-spacing: 0.03em;
+    }
+
+    /* ── Problem slide ── */
+    .problem-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 32px;
+    }
+    .problem-card {
+      background: var(--light); border-radius: 12px; padding: 22px 24px;
+      text-align: left; border-left: 3px solid var(--brand);
+    }
+    .problem-card .stat { font-size: 2em; font-weight: 700; color: var(--brand); line-height: 1; }
+    .problem-card .label { font-size: 0.8em; color: var(--muted); margin-top: 6px; }
+    .problem-card .desc { font-size: 0.82em; color: #555; margin-top: 8px; line-height: 1.5; }
+
+    /* ── Architecture slide ── */
+    .arch-flow {
+      display: flex; align-items: center; justify-content: center;
+      gap: 0; margin: 32px 0 20px;
+    }
+    .arch-box {
+      background: var(--light); border-radius: 10px; padding: 14px 20px;
+      text-align: center; min-width: 130px;
+    }
+    .arch-box .ab-label { font-size: 0.72em; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+    .arch-box .ab-name  { font-size: 0.9em; font-weight: 700; color: var(--brand); }
+    .arch-box .ab-sub   { font-size: 0.68em; color: var(--muted); margin-top: 3px; }
+    .arch-box.accent    { background: var(--brand); }
+    .arch-box.accent .ab-label { color: rgba(255,255,255,0.5); }
+    .arch-box.accent .ab-name  { color: #fff; }
+    .arch-box.accent .ab-sub   { color: rgba(255,255,255,0.5); }
+    .arch-arrow { font-size: 1.2em; color: #ccc; padding: 0 10px; }
+    .intent-row { display: flex; gap: 10px; justify-content: center; margin-top: 16px; }
+    .intent-pill {
+      border: 1.5px solid #ddd; border-radius: 20px; padding: 6px 16px;
+      font-size: 0.75em; font-weight: 600; color: var(--muted);
+    }
+    .intent-pill.active { border-color: var(--accent); color: var(--accent); background: #eff6ff; }
+
+    /* ── Decisions slide ── */
+    .decision-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 28px; }
+    .decision-card {
+      background: var(--light); border-radius: 10px; padding: 18px 20px; text-align: left;
+    }
+    .decision-card .dc-title { font-size: 0.85em; font-weight: 700; color: var(--brand); margin-bottom: 6px; }
+    .decision-card .dc-body  { font-size: 0.75em; color: #555; line-height: 1.55; }
+    .decision-card .dc-icon  { font-size: 1.3em; margin-bottom: 8px; }
+
+    /* ── Production slide ── */
+    .prod-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 28px; }
+    .prod-col h3 { font-size: 0.9em; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 14px; }
+    .prod-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      margin-bottom: 14px;
+    }
+    .prod-dot {
+      width: 8px; height: 8px; border-radius: 50%; margin-top: 6px; flex-shrink: 0;
+    }
+    .prod-dot.now  { background: var(--green); }
+    .prod-dot.next { background: var(--accent); }
+    .prod-item p { font-size: 0.78em; color: #444; line-height: 1.5; margin: 0; }
+    .prod-item strong { color: var(--brand); }
+
+    /* slide label */
+    .slide-num { position: absolute; bottom: 20px; right: 30px; font-size: 0.65em; color: #ccc; }
+  </style>
+</head>
+<body>
+<div class="reveal">
+  <div class="slides">
+
+    <!-- ── Slide 1: Title ── -->
+    <section class="slide-title">
+      <div class="brand-row">
+        <svg width="40" height="40" viewBox="0 0 32 32" fill="none">
+          <rect width="32" height="32" rx="8" fill="white" fill-opacity="0.15"/>
+          <path d="M16 8.5 C13 8 9.5 8.5 7.5 9.5 L7.5 23 C9.5 22 13 21.5 16 22 Z" fill="white"/>
+          <path d="M16 8.5 C19 8 22.5 8.5 24.5 9.5 L24.5 23 C22.5 22 19 21.5 16 22 Z" fill="white" opacity="0.45"/>
+          <line x1="16" y1="8.5" x2="16" y2="22" stroke="#1a1a1a" stroke-width="1"/>
+        </svg>
+      </div>
+      <div class="brand-label">Bookly</div>
+      <h1>AI Customer Support Agent</h1>
+      <p>A Solutions Engineering Demo — Built with Anthropic Claude</p>
+      <div class="chip-row">
+        <span class="chip">Python + FastAPI</span>
+        <span class="chip">Claude Sonnet 4.6</span>
+        <span class="chip">Claude Haiku 4.5</span>
+        <span class="chip">Tool Use</span>
+        <span class="chip">SSE Streaming</span>
+        <span class="chip">Raw Anthropic SDK</span>
+      </div>
+    </section>
+
+    <!-- ── Slide 2: The Problem ── -->
+    <section>
+      <h2>The Problem</h2>
+      <p style="color:var(--muted); font-size:0.85em;">Customer support at scale is slow, expensive, and inconsistent.</p>
+      <div class="problem-grid">
+        <div class="problem-card">
+          <div class="stat">73%</div>
+          <div class="label">of support tickets are repetitive</div>
+          <div class="desc">Order status, return requests, and policy questions account for the vast majority of inbound volume — no specialised knowledge required.</div>
+        </div>
+        <div class="problem-card">
+          <div class="stat">$8–$12</div>
+          <div class="label">average cost per human-handled ticket</div>
+          <div class="desc">At scale, even modest deflection rates translate directly to millions in annual savings without sacrificing customer experience.</div>
+        </div>
+        <div class="problem-card">
+          <div class="stat">24/7</div>
+          <div class="label">customer expectation, not a differentiator</div>
+          <div class="desc">Customers expect instant answers regardless of time zone or queue depth. Human agents can't match this without significant overhead.</div>
+        </div>
+        <div class="problem-card">
+          <div class="stat">↓ CSAT</div>
+          <div class="label">from inconsistent agent responses</div>
+          <div class="desc">Different agents give different answers. An AI agent with a single source of truth delivers consistent, policy-accurate responses every time.</div>
+        </div>
+      </div>
+      <div class="slide-num">2 / 5</div>
+    </section>
+
+    <!-- ── Slide 3: Architecture ── -->
+    <section>
+      <h2>How It Works</h2>
+      <p style="color:var(--muted); font-size:0.85em;">A single agent with smart routing — no framework, no black box.</p>
+
+      <div class="arch-flow">
+        <div class="arch-box">
+          <div class="ab-label">Input</div>
+          <div class="ab-name">User Message</div>
+          <div class="ab-sub">via SSE stream</div>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box">
+          <div class="ab-label">Classify</div>
+          <div class="ab-name">Haiku 4.5</div>
+          <div class="ab-sub">Intent router</div>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box accent">
+          <div class="ab-label">Agent</div>
+          <div class="ab-name">Sonnet 4.6</div>
+          <div class="ab-sub">Reason + Act</div>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box">
+          <div class="ab-label">Execute</div>
+          <div class="ab-name">Tools</div>
+          <div class="ab-sub">Auth, Orders, Policy</div>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box">
+          <div class="ab-label">Output</div>
+          <div class="ab-name">Response</div>
+          <div class="ab-sub">Streamed live</div>
+        </div>
+      </div>
+
+      <p style="font-size:0.72em; color:var(--muted); text-align:center; margin: 4px 0 12px;">Each intent gets its own scoped system prompt + tool subset</p>
+
+      <div class="intent-row">
+        <div class="intent-pill active">🎯 Order Status</div>
+        <div class="intent-pill active">🎯 Return / Refund</div>
+        <div class="intent-pill active">🎯 Policy Questions</div>
+        <div class="intent-pill">Escalation</div>
+        <div class="intent-pill">Unclear</div>
+      </div>
+      <div class="slide-num">3 / 5</div>
+    </section>
+
+    <!-- ── Slide 4: Key Decisions ── -->
+    <section>
+      <h2>Key Engineering Decisions</h2>
+      <p style="color:var(--muted); font-size:0.85em;">Every choice made deliberately — and why.</p>
+      <div class="decision-grid">
+        <div class="decision-card">
+          <div class="dc-icon">🔩</div>
+          <div class="dc-title">Raw SDK, No Framework</div>
+          <div class="dc-body">No LangChain, no abstraction layer. Direct Anthropic SDK calls give full control over the tool loop, streaming, and error handling — and avoid framework lock-in.</div>
+        </div>
+        <div class="decision-card">
+          <div class="dc-icon">⚡</div>
+          <div class="dc-title">Two-Model Architecture</div>
+          <div class="dc-body">Haiku classifies intent on every message — fast and cheap. Sonnet executes — powerful and accurate. Using a smaller model for routing keeps latency and cost low.</div>
+        </div>
+        <div class="decision-card">
+          <div class="dc-icon">📦</div>
+          <div class="dc-title">Self-Contained Intents</div>
+          <div class="dc-body">Each intent owns its system prompt and tool subset. The agent never sees tools it doesn't need, reducing hallucination risk and keeping prompts focused.</div>
+        </div>
+        <div class="decision-card">
+          <div class="dc-icon">🚿</div>
+          <div class="dc-title">Filler Text Suppression</div>
+          <div class="dc-body">Text generated before a tool call ("Let me look that up!") is buffered and discarded. Only the final, informed response is streamed — no noise, no filler.</div>
+        </div>
+      </div>
+      <div class="slide-num">4 / 5</div>
+    </section>
+
+    <!-- ── Slide 5: Production Path ── -->
+    <section>
+      <h2>Production Readiness</h2>
+      <p style="color:var(--muted); font-size:0.85em;">What's in the demo — and what comes next.</p>
+      <div class="prod-cols">
+        <div class="prod-col">
+          <h3>Built &amp; Working</h3>
+          <div class="prod-item">
+            <div class="prod-dot now"></div>
+            <p><strong>Intent routing</strong> — Haiku classifies every message, Sonnet executes with a scoped prompt</p>
+          </div>
+          <div class="prod-item">
+            <div class="prod-dot now"></div>
+            <p><strong>OTP authentication</strong> — verify customer identity before any account action</p>
+          </div>
+          <div class="prod-item">
+            <div class="prod-dot now"></div>
+            <p><strong>Tool use loop</strong> — auth, order lookup, return/exchange initiation, policy retrieval</p>
+          </div>
+          <div class="prod-item">
+            <div class="prod-dot now"></div>
+            <p><strong>Real-time streaming</strong> — SSE with live Agent Reasoning panel</p>
+          </div>
+          <div class="prod-item">
+            <div class="prod-dot now"></div>
+            <p><strong>Exchange upsell</strong> — proactively offers replacement before processing a return</p>
+          </div>
+        </div>
+        <div class="prod-col">
+          <h3>Production Next Steps</h3>
+          <div class="prod-item">
+            <div class="prod-dot next"></div>
+            <p><strong>Persistent sessions</strong> — replace in-memory dict with Redis or a database</p>
+          </div>
+          <div class="prod-item">
+            <div class="prod-dot next"></div>
+            <p><strong>History trimming</strong> — cap conversation length to avoid context window overflow</p>
+          </div>
+          <div class="prod-item">
+            <div class="prod-dot next"></div>
+            <p><strong>Real API integrations</strong> — swap mock tool handlers for live order management and CRM systems</p>
+          </div>
+          <div class="prod-item">
+            <div class="prod-dot next"></div>
+            <p><strong>Human-in-the-loop</strong> — escalation queue for high-stakes actions above a threshold</p>
+          </div>
+          <div class="prod-item">
+            <div class="prod-dot next"></div>
+            <p><strong>Multi-agent evolution</strong> — independent specialist agents per intent for isolated scaling</p>
+          </div>
+        </div>
+      </div>
+      <div class="slide-num">5 / 5</div>
+    </section>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
+<script>
+  Reveal.initialize({
+    hash: true,
+    controls: true,
+    progress: true,
+    center: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+  });
+</script>
+</body>
+</html>
