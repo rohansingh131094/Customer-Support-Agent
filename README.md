@@ -6,7 +6,7 @@ A conversational AI customer support agent for Bookly, a fictional online bookst
 
 - **Order status** — look up real-time order information by order ID
 - **Returns & refunds** — multi-turn flow that collects context and confirms before acting
-- **Policy questions** — shipping, returns, password reset, payment via tool-backed lookup
+- **Policy questions** — answered via semantic search over a RAG knowledge base
 
 ## Architecture
 
@@ -16,45 +16,53 @@ User (browser)
      ▼
 FastAPI  (/chat endpoint)
      │
+     ├── Haiku  (journey classification — matches message against journey observations)
+     │
+     ▼
+Journey  (goal, rules, policies, scoped tools)
+     │
      ▼
 Agent Loop  (agent/loop.py)
-  ├── System prompt  (agent/system_prompt.py)
-  ├── Tool definitions  (agent/tools.py)
+  ├── Sonnet  (reasoning + tool use)
   └── Anthropic Claude API
           │  tool_use
           ▼
      Tool execution
-       ├── send_otp          →  data/auth.py
-       ├── verify_otp        →  data/auth.py
-       ├── get_order_status  →  data/orders.py
-       ├── initiate_return   →  data/orders.py
-       └── get_policy        →  data/policies.json
+       ├── send_otp           →  data/auth.py
+       ├── verify_otp         →  data/auth.py
+       ├── get_orders         →  data/orders.py
+       ├── initiate_return    →  data/orders.py
+       ├── initiate_exchange  →  data/orders.py
+       └── search_knowledge   →  data/knowledge.py  (ChromaDB RAG)
 ```
 
 Session history is stored in-memory, keyed by a per-browser UUID.
 
 ## Prerequisites
 
-- Python 3.11+
+- Python 3.9+
 - An [Anthropic API key](https://console.anthropic.com/)
 
 ## Setup
 
 ```bash
 # 1. Clone the repo
-git clone <repo-url>
-cd bookly-agent
+git clone https://github.com/rohansingh131094/Customer-Support-Agent.git
+cd Customer-Support-Agent
 
 # 2. Create and activate a virtual environment
-python -m venv venv
+python3 -m venv venv
 source venv/bin/activate      # Windows: venv\Scripts\activate
 
 # 3. Install dependencies
 pip install -r requirements.txt
+```
 
-# 4. Configure your API key
-cp .env.example .env
-# Edit .env and add your Anthropic API key
+> ChromaDB will download a local embedding model (~79MB) on first run. This is a one-time download.
+
+```bash
+# 4. Add your Anthropic API key
+echo "ANTHROPIC_API_KEY=your_api_key_here" > .env
 ```
 
 ## Run
@@ -71,18 +79,17 @@ Open [http://localhost:8000](http://localhost:8000) in your browser.
 
 | Email | Phone | Name | Orders |
 |---|---|---|---|
-| sarah@gmail.com | 555-0201 | Sarah Chen | BK-2001 (delivered), BK-2002 (delayed) |
-| john@gmail.com | 555-0301 | John Doe | BK-3001 (shipped), BK-3002 (delivered) |
+| sarah@gmail.com | 415-696-3967 | Sarah Chen | BK-2001 (delivered), BK-2002 (delayed) |
+| john@gmail.com | 332-275-3252 | John Doe | BK-3001 (shipped), BK-3002 (delivered) |
 
 | Scenario | How to trigger |
 |---|---|
 | Return flow | Authenticate as Sarah or John → "I want to return my order" |
 | Delayed order | Authenticate as Sarah → ask about orders |
 | Shipped order | Authenticate as John → ask about orders |
-| Policy question | `"How long does shipping take?"` — no auth needed |
-| Policy question | `"How long does shipping take?"` — no auth needed |
-| Escalation friction | `"I want to speak to a human"` → agent tries to help first |
-| Out-of-scope | `"What's the weather like?"` |
+| Policy question | "How long does shipping take?" — no auth needed |
+| Escalation friction | "I want to speak to a human" → agent tries to help first |
+| Out-of-scope | "What's the weather like?" |
 
 ## Project structure
 
@@ -93,13 +100,15 @@ Open [http://localhost:8000](http://localhost:8000) in your browser.
 │   ├── loop.py             # Agent loop — tool-use orchestration
 │   ├── tools.py            # Tool definitions + execution
 │   ├── sessions.py         # In-memory session/history management
-│   └── system_prompt.py    # System prompt
+│   ├── intent.py           # Journey classification via Haiku
+│   └── journeys.py         # Journey definitions (AgentConfig + Journey dataclasses)
 ├── data/
-│   ├── orders.py           # Mock order database + return logic
+│   ├── orders.py           # Mock order database + return/exchange logic
 │   ├── policies.py         # Policy loader
-│   └── policies.json       # Policy content
+│   ├── policies.json       # Policy content
+│   └── knowledge.py        # RAG knowledge base (ChromaDB)
 ├── static/
 │   └── index.html          # Chat UI
 ├── requirements.txt
-└── .env.example
+└── .env                    # Your API key (not committed)
 ```
