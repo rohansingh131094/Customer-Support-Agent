@@ -10,8 +10,7 @@ from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 
 from agent.intent import classify_intent
-from agent.system_prompt import build_intent
-from agent.tools import get_tools
+from agent.journeys import build_journey
 from agent.loop import stream_agent
 from agent.sessions import get_history, get_intent, set_intent, update_history
 
@@ -46,8 +45,7 @@ def chat(req: ChatRequest):
 
     set_intent(req.session_id, intent)
 
-    system_prompt, tool_names = build_intent(intent)
-    tools = get_tools(tool_names)
+    system_prompt, tools = build_journey(intent)
     history = get_history(req.session_id)
 
     def generate():
