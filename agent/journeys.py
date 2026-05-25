@@ -96,8 +96,6 @@ BOOKLY_AGENT = AgentConfig(
             "\"I'm only set up to help with Bookly orders and account questions — "
             "is there something along those lines I can help with?\""
         ),
-    ],
-    global_policies=[
         (
             "If the customer asks to speak to a human, do not transfer immediately. First ask: "
             "\"I'd be happy to connect you — before I do, can you tell me what you're running "
@@ -106,6 +104,11 @@ BOOKLY_AGENT = AgentConfig(
             "When escalating: \"Let me connect you with a member of our support team.\" "
             "Do not keep attempting to resolve after escalating."
         ),
+    ],
+    global_policies=[
+        "Bookly operates as an online-only bookstore — there are no physical store locations.",
+        "Customer data is never shared with third parties outside of order fulfillment.",
+        "All prices are in USD and include applicable taxes at checkout.",
     ],
     journeys=[
         Journey(
@@ -143,10 +146,17 @@ BOOKLY_AGENT = AgentConfig(
                 "Only call initiate_return or initiate_exchange after the customer explicitly confirms.",
                 "Never initiate an action the customer hasn't agreed to.",
                 "If no delivered order exists, explain that returns require delivery first.",
-            ],
-            policies=[
                 "If the reason suggests the customer still wants the product (damaged copy, wrong item, wrong edition), offer an exchange before a return.",
                 "If the customer has changed their mind or no longer wants the item, proceed to a return.",
+            ],
+            policies=[
+                "Returns are accepted within 30 days of delivery. Orders outside this window are not eligible.",
+                "Items must be in their original condition — unread, unused, and in original packaging.",
+                "Digital items (e-books, audiobooks) are not eligible for return or refund once accessed.",
+                "Damaged or defective items are eligible for a full refund or exchange regardless of condition.",
+                "Refunds are issued to the original payment method and take 5–7 business days to process.",
+                "Original shipping charges are non-refundable unless the item arrived damaged or was incorrect.",
+                "Gift items can be returned for store credit only — refunds are not issued to the original purchaser.",
             ],
             tools=["send_otp", "verify_otp", "get_orders", "initiate_return", "initiate_exchange"],
         ),
