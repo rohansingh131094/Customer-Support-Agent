@@ -1035,6 +1035,9 @@
           <marker id="arr-dashed" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
             <path d="M0,0 L0,6 L7,3 z" fill="#3a3a3a"/>
           </marker>
+          <marker id="arr-purple" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L7,3 z" fill="#a78bfa"/>
+          </marker>
         </defs>
 
         <!-- ── ROW 1: Customer → FastAPI → Haiku → Router → Journey ── -->
@@ -1127,7 +1130,21 @@
         <!-- Right column -->
         <text x="775" y="314" font-family="'Courier New',monospace" font-size="7" fill="rgba(52,211,153,0.7)">verify_otp</text>
         <text x="775" y="326" font-family="'Courier New',monospace" font-size="7" fill="rgba(52,211,153,0.7)">initiate_return</text>
-        <text x="775" y="338" font-family="'Courier New',monospace" font-size="7" fill="rgba(52,211,153,0.7)">get_policy</text>
+        <text x="775" y="338" font-family="'Courier New',monospace" font-size="7" fill="rgba(52,211,153,0.7)">search_knowledge</text>
+
+        <!-- ── KNOWLEDGE BASE (right of tools, RAG) ── -->
+        <!-- Forward arrow: tools → KB (query) -->
+        <line x1="862" y1="308" x2="876" y2="308" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arr-purple)"/>
+        <!-- Backward arrow: KB → tools (results) -->
+        <line x1="876" y1="320" x2="862" y2="320" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arr-purple)"/>
+
+        <rect x="878" y="271" width="162" height="90" rx="5" fill="#120a24" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="959" y="284" text-anchor="middle" font-family="Manrope,sans-serif" font-size="7.5" font-weight="700" fill="#a78bfa" letter-spacing="1.2">RAG</text>
+        <text x="959" y="297" text-anchor="middle" font-family="Manrope,sans-serif" font-size="10.5" font-weight="800" fill="#fff">Knowledge Base</text>
+        <line x1="888" y1="303" x2="1030" y2="303" stroke="#a78bfa" stroke-width="0.5" stroke-opacity="0.25"/>
+        <text x="898" y="314" font-family="'Courier New',monospace" font-size="7" fill="rgba(167,139,250,0.7)">ChromaDB</text>
+        <text x="898" y="326" font-family="'Courier New',monospace" font-size="7" fill="rgba(167,139,250,0.7)">all-MiniLM-L6-v2</text>
+        <text x="898" y="338" font-family="'Courier New',monospace" font-size="7" fill="rgba(167,139,250,0.7)">17 doc chunks</text>
 
         <!-- ── SESSION MEMORY (below FastAPI, dashed) ── -->
         <!-- Vertical connector FastAPI → Session Memory -->
@@ -1139,10 +1156,6 @@
         <!-- Dashed line: Session Memory → Sonnet (long horizontal path) -->
         <path d="M 233 180 Q 450 180 672 142" stroke="#2a2a2a" stroke-width="1" fill="none" stroke-dasharray="5,4" marker-end="url(#arr-dashed)"/>
 
-        <!-- ── TOOLS CAPTION (right of tools box) ── -->
-        <text x="872" y="300" font-family="Manrope,sans-serif" font-size="8" font-style="italic" fill="rgba(255,255,255,0.32)">Customer-specific answers are</text>
-        <text x="872" y="312" font-family="Manrope,sans-serif" font-size="8" font-style="italic" fill="rgba(255,255,255,0.32)">grounded in mocked Bookly tools,</text>
-        <text x="872" y="324" font-family="Manrope,sans-serif" font-size="8" font-style="italic" fill="rgba(255,255,255,0.32)">not model memory.</text>
       </svg>
     </div>
 
