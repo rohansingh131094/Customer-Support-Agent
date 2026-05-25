@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 
-from agent.intent import classify_intent
+from agent.intent import classify_journey
 from agent.journeys import build_journey
 from agent.loop import stream_agent
 from agent.sessions import get_history, get_intent, set_intent, update_history
@@ -33,23 +33,23 @@ def chat(req: ChatRequest):
     if not req.message.strip():
         raise HTTPException(status_code=400, detail="Message cannot be empty.")
 
-    # Reclassify on every message, but only update if Haiku returns a confident intent
-    current_intent = get_intent(req.session_id)
-    new_intent = classify_intent(req.message)
+    # Classify by matching customer message against journey observations
+    current_journey = get_intent(req.session_id)
+    new_journey = classify_journey(req.message)
 
-    if new_intent not in ("unclear", "other"):
-        intent = new_intent
+    if new_journey not in ("Unclear Request", "Out of Scope"):
+        journey_name = new_journey
     else:
-        # Ambiguous follow-up — keep current intent if one exists, otherwise use new
-        intent = current_intent if current_intent else new_intent
+        # Ambiguous follow-up — keep current journey if one exists, otherwise use new
+        journey_name = current_journey if current_journey else new_journey
 
-    set_intent(req.session_id, intent)
+    set_intent(req.session_id, journey_name)
 
-    system_prompt, tools = build_journey(intent)
+    system_prompt, tools = build_journey(journey_name)
     history = get_history(req.session_id)
 
     def generate():
-        yield f"data: {json.dumps({'intent': intent})}\n\n"
+        yield f"data: {json.dumps({'journey': journey_name})}\n\n"
         for event_type, payload in stream_agent(req.message, history, system_prompt, tools):
             if event_type == "text":
                 yield f"data: {json.dumps({'chunk': payload})}\n\n"

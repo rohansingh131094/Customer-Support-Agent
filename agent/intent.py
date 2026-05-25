@@ -1,27 +1,33 @@
+from __future__ import annotations
 import anthropic
+from agent.journeys import BOOKLY_AGENT, Journey
 
 _client = anthropic.Anthropic()
 
-_CLASSIFIER_PROMPT = """Classify the customer's message into exactly one of these intents:
 
-- order_status: asking about an order, tracking, delivery, where is my package
-- return: wanting to return, refund, or exchange an item
-- policy: questions about shipping times, payment methods, password reset, general policies
-- escalation: wants to speak to a human agent
-- other: anything outside Bookly support scope
-- unclear: the message is too vague or ambiguous to confidently classify
+def _build_classifier_prompt(journeys: list[Journey]) -> str:
+    options = "\n".join(
+        f"- {j.name}: {j.observation}"
+        for j in journeys
+    )
+    return (
+        "You are a customer intent classifier for Bookly, an online bookstore.\n"
+        "Given a customer message, identify which journey observation is true.\n\n"
+        "Journeys:\n"
+        f"{options}\n\n"
+        "Reply with only the exact journey name from the list above. Nothing else."
+    )
 
-Reply with only the intent label. Nothing else."""
 
-VALID_INTENTS = {"order_status", "return", "policy", "escalation", "other", "unclear"}
+def classify_journey(message: str) -> str:
+    journeys = BOOKLY_AGENT.journeys
+    valid_names = {j.name for j in journeys}
 
-
-def classify_intent(message: str) -> str:
     response = _client.messages.create(
         model="claude-haiku-4-5-20251001",
-        max_tokens=10,
-        system=_CLASSIFIER_PROMPT,
+        max_tokens=20,
+        system=_build_classifier_prompt(journeys),
         messages=[{"role": "user", "content": message}],
     )
-    intent = response.content[0].text.strip().lower()
-    return intent if intent in VALID_INTENTS else "other"
+    name = response.content[0].text.strip()
+    return name if name in valid_names else "Unclear Request"

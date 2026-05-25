@@ -190,20 +190,7 @@ BOOKLY_AGENT = AgentConfig(
 )
 
 
-# ── Intent → Journey mapping ──────────────────────────────────────────────────
-
-_INTENT_MAP: dict[str, str] = {
-    "order_status": "Order Status",
-    "return":       "Return / Refund / Exchange",
-    "policy":       "Policy Questions",
-    "unclear":      "Unclear Request",
-    "escalation":   "Escalation",
-    "other":        "Out of Scope",
-}
-
-
-def build_journey(intent: str) -> tuple[str, list]:
-    journey_name = _INTENT_MAP.get(intent)
+def build_journey(journey_name: str) -> tuple[str, list]:
     journey = next(
         (j for j in BOOKLY_AGENT.journeys if j.name == journey_name),
         None,
