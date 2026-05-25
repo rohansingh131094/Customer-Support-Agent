@@ -152,11 +152,7 @@ BOOKLY_AGENT = AgentConfig(
             policies=[
                 "Returns are accepted within 30 days of delivery. Orders outside this window are not eligible.",
                 "Items must be in their original condition — unread, unused, and in original packaging.",
-                "Digital items (e-books, audiobooks) are not eligible for return or refund once accessed.",
-                "Damaged or defective items are eligible for a full refund or exchange regardless of condition.",
                 "Refunds are issued to the original payment method and take 5–7 business days to process.",
-                "Original shipping charges are non-refundable unless the item arrived damaged or was incorrect.",
-                "Gift items can be returned for store credit only — refunds are not issued to the original purchaser.",
             ],
             tools=["send_otp", "verify_otp", "get_orders", "initiate_return", "initiate_exchange"],
         ),
