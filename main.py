@@ -10,7 +10,7 @@ from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 
 from agent.intent import classify_journey
-from agent.journeys import build_journey
+from agent.journeys import build_journey, BOOKLY_AGENT
 from agent.loop import stream_agent
 from agent.sessions import get_history, get_intent, set_intent, update_history
 
@@ -48,8 +48,11 @@ def chat(req: ChatRequest):
     system_prompt, tools = build_journey(journey_name)
     history = get_history(req.session_id)
 
+    matched = next((j for j in BOOKLY_AGENT.journeys if j.name == journey_name), None)
+    observation = matched.observation if matched else None
+
     def generate():
-        yield f"data: {json.dumps({'journey': journey_name})}\n\n"
+        yield f"data: {json.dumps({'journey': journey_name, 'observation': observation})}\n\n"
         for event_type, payload in stream_agent(req.message, history, system_prompt, tools):
             if event_type == "text":
                 yield f"data: {json.dumps({'chunk': payload})}\n\n"

@@ -79,8 +79,10 @@ Open [http://localhost:8000](http://localhost:8000) in your browser.
 
 | Email | Phone | Name | Orders |
 |---|---|---|---|
-| sarah@gmail.com | 415-696-3967 | Sarah Chen | BK-2001 (delivered), BK-2002 (delayed) |
-| john@gmail.com | 332-275-3252 | John Doe | BK-3001 (shipped), BK-3002 (delivered) |
+| sarah@gmail.com | 415-696-3967 | Sarah Chen | BK-2001 (delivered May 27), BK-2002 (delayed, est. Jun 1) |
+| john@gmail.com | 332-275-3252 | John Doe | BK-3001 (shipped, est. Jun 2), BK-3002 (delivered May 27) |
+
+Once verified, the agent has access to the customer's full profile — preferred name, member since, address on file, and card on file.
 
 | Scenario | How to trigger |
 |---|---|
@@ -104,8 +106,7 @@ Open [http://localhost:8000](http://localhost:8000) in your browser.
 │   └── journeys.py         # Journey definitions (AgentConfig + Journey dataclasses)
 ├── data/
 │   ├── orders.py           # Mock order database + return/exchange logic
-│   ├── policies.py         # Policy loader
-│   ├── policies.json       # Policy content
+│   ├── auth.py             # Mock customer directory + OTP verification
 │   └── knowledge.py        # RAG knowledge base (ChromaDB)
 ├── static/
 │   └── index.html          # Chat UI

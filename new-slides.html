@@ -1255,11 +1255,15 @@
           <div class="prod2-items">
             <div>
               <div class="prod2-item-title">Persistent Sessions</div>
-              <div class="prod2-item-desc">Replace in-memory state with Redis or DynamoDB — survives restarts, enables horizontal scaling, and is a hard requirement before multi-instance deploy.</div>
+              <div class="prod2-item-desc">Replace in-memory state with Redis or DynamoDB — session context persists across different channels, so the agent remembers returning customers and can personalize every interaction.</div>
             </div>
             <div>
               <div class="prod2-item-title">Structured Observability</div>
               <div class="prod2-item-desc">Trace every intent decision, tool latency, and token spend — without this, production failures are invisible until a customer notices.</div>
+            </div>
+            <div>
+              <div class="prod2-item-title">PII Detection & Encryption</div>
+              <div class="prod2-item-desc">Customer data in conversation history and tool results must be scrubbed and encrypted before logging — non-negotiable for GDPR and CCPA compliance.</div>
             </div>
           </div>
         </div>
@@ -1272,6 +1276,10 @@
             <div>
               <div class="prod2-item-title">Prompt Caching</div>
               <div class="prod2-item-desc">Cache stable system prompts and journeys to reduce repeated input-token cost on every turn at scale.</div>
+            </div>
+            <div>
+              <div class="prod2-item-title">Fine-tuned Specialist Models</div>
+              <div class="prod2-item-desc">Replace expensive general-purpose model calls with fine-tuned models for high-frequency narrow tasks — intent detection, abuse detection, PII screening — reducing cost and latency at volume.</div>
             </div>
           </div>
         </div>
@@ -1287,7 +1295,7 @@
             </div>
             <div>
               <div class="prod2-item-title">LLM-as-a-Judge Evals</div>
-              <div class="prod2-item-desc">Automated eval pipeline scores responses on compliance, accuracy, and tone after every prompt change.</div>
+              <div class="prod2-item-desc">Automated eval pipeline scores responses on compliance, accuracy, and tone as part of CI/CD before every release — paired with journey simulations that exercise each journey's goal, policies, and tool paths end-to-end.</div>
             </div>
           </div>
         </div>

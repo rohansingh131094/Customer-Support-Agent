@@ -2,7 +2,7 @@ ORDERS = {
     # Sarah Chen's orders
     "BK-2001": {
         "status": "delivered",
-        "delivered_on": "2026-05-18",
+        "delivered_on": "2026-05-27",
         "items": ["The Great Gatsby", "1984"],
         "total": "$24.98",
         "customer": "Sarah Chen",
@@ -10,7 +10,7 @@ ORDERS = {
     "BK-2002": {
         "status": "delayed",
         "tracking_number": "TRK-334455",
-        "original_delivery": "2026-05-20",
+        "original_delivery": "2026-06-01",
         "items": ["Dune Messiah"],
         "total": "$14.99",
         "customer": "Sarah Chen",
@@ -20,14 +20,14 @@ ORDERS = {
     "BK-3001": {
         "status": "shipped",
         "tracking_number": "TRK-667788",
-        "estimated_delivery": "2026-05-24",
+        "estimated_delivery": "2026-06-02",
         "items": ["Atomic Habits"],
         "total": "$16.99",
         "customer": "John Doe",
     },
     "BK-3002": {
         "status": "delivered",
-        "delivered_on": "2026-05-19",
+        "delivered_on": "2026-05-27",
         "items": ["Deep Work", "Digital Minimalism"],
         "total": "$31.98",
         "customer": "John Doe",
@@ -67,33 +67,43 @@ def get_orders_by_contact(contact: str) -> str:
 
 
 def initiate_exchange_request(order_id: str, reason: str) -> str:
+    import json
     order = ORDERS.get(order_id.upper())
     if not order:
-        return f"No order found with ID '{order_id}'."
+        return json.dumps({"success": False, "error": f"No order found with ID '{order_id}'."})
 
     exchange_id = f"EXC-{order_id.upper()}-{abs(hash(reason)) % 10000:04d}"
-    return (
-        f"Exchange initiated successfully for order {order_id.upper()}. "
-        f"A prepaid return label will be emailed within 24 hours. "
-        f"A replacement will be shipped as soon as we receive the original. "
-        f"Exchange reference: {exchange_id}."
-    )
+    return json.dumps({
+        "success": True,
+        "exchange_id": exchange_id,
+        "order_id": order_id.upper(),
+        "message": "Exchange initiated successfully.",
+        "next_steps": [
+            "A prepaid return label will be emailed within 24 hours.",
+            "A replacement will be shipped as soon as we receive the original.",
+        ],
+    })
 
 
 def initiate_return_request(order_id: str, reason: str) -> str:
+    import json
     order = ORDERS.get(order_id.upper())
     if not order:
-        return f"No order found with ID '{order_id}'."
+        return json.dumps({"success": False, "error": f"No order found with ID '{order_id}'."})
 
     if order["status"] not in ("delivered",):
-        return (
-            f"Order {order_id.upper()} cannot be returned yet — it has not been delivered "
-            f"(current status: {order['status'].replace('_', ' ')}). "
-            f"Please wait until the order is delivered before requesting a return."
-        )
+        return json.dumps({
+            "success": False,
+            "error": f"Order {order_id.upper()} cannot be returned yet — it has not been delivered.",
+            "current_status": order["status"],
+        })
 
-    return (
-        f"Return successfully initiated for order {order_id.upper()}. "
-        f"A prepaid shipping label will be emailed within 24 hours. "
-        f"The refund will be processed within 3-5 business days of receiving the item."
-    )
+    return json.dumps({
+        "success": True,
+        "order_id": order_id.upper(),
+        "message": "Return successfully initiated.",
+        "next_steps": [
+            "A prepaid shipping label will be emailed within 24 hours.",
+            "Refund will be processed within 3-5 business days of receiving the item.",
+        ],
+    })

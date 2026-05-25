@@ -1,5 +1,4 @@
 from data.orders import get_orders_by_contact, initiate_return_request, initiate_exchange_request
-from data.policies import get_policy_text
 from data.knowledge import search_knowledge as _search_knowledge
 from data.auth import send_otp as _send_otp, verify_otp as _verify_otp
 
@@ -8,7 +7,7 @@ TOOL_DEFINITIONS = [
         "name": "send_otp",
         "description": (
             "Send a one-time verification code to the customer's email or phone number. "
-            "Call this before any order lookup or return request to begin identity verification."
+            "Contact (email or phone) is the only input needed — do not ask for name, address, or any other identifier before calling this."
         ),
         "input_schema": {
             "type": "object",
@@ -106,21 +105,6 @@ TOOL_DEFINITIONS = [
         },
     },
     {
-        "name": "get_policy",
-        "description": "Retrieve Bookly policy information on a specific topic.",
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "topic": {
-                    "type": "string",
-                    "enum": ["shipping", "returns", "password_reset", "payment"],
-                    "description": "The policy topic to retrieve",
-                }
-            },
-            "required": ["topic"],
-        },
-    },
-    {
         "name": "search_knowledge",
         "description": (
             "Search Bookly's knowledge base to answer customer questions about policies, "
@@ -154,7 +138,6 @@ _TOOL_MAP = {
     "get_orders":        lambda i: get_orders_by_contact(i["contact"]),
     "initiate_exchange": lambda i: initiate_exchange_request(i["order_id"], i["reason"]),
     "initiate_return":   lambda i: initiate_return_request(i["order_id"], i["reason"]),
-    "get_policy":        lambda i: get_policy_text(i["topic"]),
     "search_knowledge":  lambda i: _search_knowledge(i["query"]),
 }
 
