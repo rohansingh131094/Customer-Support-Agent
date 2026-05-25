@@ -1,6 +1,6 @@
 from data.orders import get_orders_by_contact, initiate_return_request, initiate_exchange_request
 from data.knowledge import search_knowledge as _search_knowledge
-from data.auth import send_otp as _send_otp, verify_otp as _verify_otp
+from data.auth import send_otp as _send_otp, verify_otp as _verify_otp, update_shipping_address as _update_shipping_address, update_email as _update_email
 
 TOOL_DEFINITIONS = [
     {
@@ -105,6 +105,48 @@ TOOL_DEFINITIONS = [
         },
     },
     {
+        "name": "update_shipping_address",
+        "description": (
+            "Update the shipping address on the customer's account. "
+            "Only call after identity has been verified with verify_otp and the customer has confirmed the new address."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "contact": {
+                    "type": "string",
+                    "description": "The customer's email or phone used during verification",
+                },
+                "new_address": {
+                    "type": "string",
+                    "description": "The new shipping address to save on the account",
+                },
+            },
+            "required": ["contact", "new_address"],
+        },
+    },
+    {
+        "name": "update_email",
+        "description": (
+            "Update the email address on the customer's account. "
+            "Only call after identity has been verified with verify_otp and the customer has confirmed the new email."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "contact": {
+                    "type": "string",
+                    "description": "The customer's email or phone used during verification",
+                },
+                "new_email": {
+                    "type": "string",
+                    "description": "The new email address to save on the account",
+                },
+            },
+            "required": ["contact", "new_email"],
+        },
+    },
+    {
         "name": "search_knowledge",
         "description": (
             "Search Bookly's knowledge base to answer customer questions about policies, "
@@ -138,7 +180,9 @@ _TOOL_MAP = {
     "get_orders":        lambda i: get_orders_by_contact(i["contact"]),
     "initiate_exchange": lambda i: initiate_exchange_request(i["order_id"], i["reason"]),
     "initiate_return":   lambda i: initiate_return_request(i["order_id"], i["reason"]),
-    "search_knowledge":  lambda i: _search_knowledge(i["query"]),
+    "update_shipping_address": lambda i: _update_shipping_address(i["contact"], i["new_address"]),
+    "update_email":            lambda i: _update_email(i["contact"], i["new_email"]),
+    "search_knowledge":        lambda i: _search_knowledge(i["query"]),
 }
 
 

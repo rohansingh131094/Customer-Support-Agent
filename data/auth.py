@@ -5,6 +5,7 @@ _SARAH = {
     "member_since": "2022-08-15",
     "address": "742 Evergreen Terrace, San Francisco, CA 94110",
     "card": "Visa ending in 3847",
+    "email": "sarah@gmail.com",
     "orders": ["BK-2001", "BK-2002"],
 }
 
@@ -14,6 +15,7 @@ _JOHN = {
     "member_since": "2021-04-03",
     "address": "15 Oak Avenue, Brooklyn, NY 11201",
     "card": "Mastercard ending in 5291",
+    "email": "john@gmail.com",
     "orders": ["BK-3001", "BK-3002"],
 }
 
@@ -58,8 +60,39 @@ def verify_otp(contact: str, code: str) -> str:
             "name": customer["name"],
             "preferred_name": customer["preferred_name"],
             "member_since": customer["member_since"],
+            "email": customer["email"],
             "address": customer["address"],
             "card": customer["card"],
         },
         "orders": customer["orders"],
+    })
+
+
+def update_shipping_address(contact: str, new_address: str) -> str:
+    import json
+    customer = CUSTOMERS.get(contact.strip().lower())
+    if not customer:
+        return json.dumps({"success": False, "error": f"No account found for '{contact}'."})
+    old_address = customer["address"]
+    customer["address"] = new_address
+    return json.dumps({
+        "success": True,
+        "message": "Shipping address updated successfully.",
+        "old_address": old_address,
+        "new_address": new_address,
+    })
+
+
+def update_email(contact: str, new_email: str) -> str:
+    import json
+    customer = CUSTOMERS.get(contact.strip().lower())
+    if not customer:
+        return json.dumps({"success": False, "error": f"No account found for '{contact}'."})
+    old_email = customer["email"]
+    customer["email"] = new_email
+    return json.dumps({
+        "success": True,
+        "message": "Email address updated successfully.",
+        "old_email": old_email,
+        "new_email": new_email,
     })

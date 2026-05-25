@@ -157,6 +157,19 @@ BOOKLY_AGENT = AgentConfig(
             tools=["send_otp", "verify_otp", "get_orders", "initiate_return", "initiate_exchange"],
         ),
         Journey(
+            name="Update Customer Profile",
+            observation="Customer wants to update their shipping address, email address, or other account information.",
+            goal="Update the customer's requested profile information accurately and confirm the change.",
+            rules=[
+                "Verify the customer's identity with send_otp and verify_otp before making any changes.",
+                "If verify_otp already succeeded this session, skip verification and proceed.",
+                "Confirm the new value with the customer before calling any update tool.",
+                "Only update what the customer explicitly requests — do not prompt for other fields.",
+                "After updating, clearly confirm what changed.",
+            ],
+            tools=["send_otp", "verify_otp", "update_shipping_address", "update_email"],
+        ),
+        Journey(
             name="Policy Questions",
             observation="Customer is asking about shipping times, payment methods, password reset, or general store policies.",
             goal="Give the customer an accurate answer to their policy question.",
