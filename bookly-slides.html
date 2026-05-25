@@ -731,7 +731,7 @@
       top: 0; left: 0; right: 0;
       height: 3px;
     }
-    .prod2-pillar.p-cost::before   { background: var(--accent); }
+    .prod2-pillar.p-cost::before   { background: #ef4444; }
     .prod2-pillar.p-scale::before  { background: #10b981; }
     .prod2-pillar.p-quality::before{ background: #f59e0b; }
 
@@ -745,14 +745,14 @@
       align-items: center;
       gap: 7px;
     }
-    .prod2-pillar.p-cost   .prod2-cat { color: var(--accent); }
+    .prod2-pillar.p-cost   .prod2-cat { color: #ef4444; }
     .prod2-pillar.p-scale  .prod2-cat { color: #10b981; }
     .prod2-pillar.p-quality.prod2-cat { color: #f59e0b; }
     .prod2-pillar.p-quality .prod2-cat { color: #f59e0b; }
     .prod2-cat-dot {
       width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
     }
-    .p-cost   .prod2-cat-dot { background: var(--accent); }
+    .p-cost   .prod2-cat-dot { background: #ef4444; }
     .p-scale  .prod2-cat-dot { background: #10b981; }
     .p-quality .prod2-cat-dot { background: #f59e0b; }
 
@@ -836,6 +836,66 @@
     body.edit-active [contenteditable]:focus { outline-color: var(--accent); background: rgba(67,97,238,0.04); }
 
 
+    /* ============================================
+       SPEAKER NOTES PANEL — toggle with N
+       ============================================ */
+    .notes-panel {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: rgba(4, 4, 4, 0.96);
+      border-top: 2px solid var(--accent);
+      padding: clamp(0.9rem, 2vw, 1.4rem) clamp(1.5rem, 4vw, 3.5rem);
+      z-index: 600;
+      transform: translateY(100%);
+      transition: transform 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+      max-height: 38vh;
+      overflow-y: auto;
+      backdrop-filter: blur(10px);
+    }
+    .notes-panel.open { transform: translateY(0); }
+    .notes-panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: clamp(0.5rem, 1vw, 0.75rem);
+    }
+    .notes-panel-label {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+    .notes-panel-close {
+      font-size: 9px;
+      color: rgba(255,255,255,0.28);
+      letter-spacing: 0.1em;
+      font-weight: 500;
+    }
+    .notes-text {
+      font-size: clamp(0.7rem, 1.05vw, 0.84rem);
+      color: rgba(255,255,255,0.72);
+      line-height: 1.78;
+      max-width: 980px;
+    }
+    .notes-text p + p { margin-top: 0.6rem; }
+    .notes-text strong { color: rgba(255,255,255,0.92); font-weight: 700; }
+    .notes-hint {
+      position: fixed;
+      bottom: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--font);
+      font-size: 9px;
+      color: rgba(255,255,255,0.16);
+      letter-spacing: 0.1em;
+      font-weight: 500;
+      z-index: 200;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    body.notes-open .notes-hint { opacity: 0; }
+
   </style>
 </head>
 <body>
@@ -881,7 +941,7 @@
       <div class="title-right-main">
         <div class="title-right-label reveal-right" style="transition-delay:0.2s">What this is</div>
         <p class="title-right-desc reveal-right" style="transition-delay:0.35s">
-          A focused prototype for Bookly, a fictional online bookstore, demonstrating how an AI support agent can handle order status, returns, and policy questions through identity checks, scoped SOPs, mocked tools, and real-time streaming.
+          A focused prototype for Bookly, a fictional online bookstore, demonstrating how an AI support agent can handle order status, returns, and policy questions through identity checks, goal-based journeys, mocked tools, and real-time streaming.
         </p>
       </div>
 
@@ -921,8 +981,8 @@
         <div class="thesis-proof reveal">
           <div class="thesis-proof-bar"></div>
           <div>
-            <div class="thesis-proof-belief">Goal-based SOPs</div>
-            <div class="thesis-proof-impl">Each workflow defines the goal, required context, allowed tools, and escalation rules for that customer intent. This gives the agent flexibility to handle varied customer phrasing without relying on a brittle step-by-step script.</div>
+            <div class="thesis-proof-belief">Goal-based Journeys</div>
+            <div class="thesis-proof-impl">Each journey is unlocked by an observation, defines a goal, and carries its own rules, policies, and tools. The agent reasons toward the goal — it doesn't follow a script.</div>
           </div>
         </div>
 
@@ -975,47 +1035,42 @@
           <marker id="arr-dashed" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
             <path d="M0,0 L0,6 L7,3 z" fill="#3a3a3a"/>
           </marker>
+          <marker id="arr-purple" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L7,3 z" fill="#a78bfa"/>
+          </marker>
         </defs>
 
-        <!-- ── ROW 1: Customer → FastAPI → Haiku → Router → Scoped SOP ── -->
+        <!-- ── ROW 1: Customer → FastAPI → Haiku → Router → Journey ── -->
 
         <!-- Customer -->
         <rect x="8" y="68" width="88" height="56" rx="5" fill="#141414" stroke="#333" stroke-width="1.5"/>
         <text x="52" y="89" text-anchor="middle" font-family="Manrope,sans-serif" font-size="7.5" font-weight="700" fill="#555" letter-spacing="1.2">USER</text>
         <text x="52" y="106" text-anchor="middle" font-family="Manrope,sans-serif" font-size="11" font-weight="800" fill="#aaa">Customer</text>
 
-        <line x1="96" y1="96" x2="116" y2="96" stroke="#333" stroke-width="1.5" marker-end="url(#arr-gray)"/>
+        <line x1="96" y1="96" x2="151" y2="96" stroke="#333" stroke-width="1.5" marker-end="url(#arr-gray)"/>
 
         <!-- FastAPI -->
-        <rect x="118" y="68" width="115" height="56" rx="5" fill="#141414" stroke="#3a3a3a" stroke-width="1.5"/>
-        <text x="175" y="89" text-anchor="middle" font-family="Manrope,sans-serif" font-size="7.5" font-weight="700" fill="#555" letter-spacing="1.2">API + SESSION</text>
-        <text x="175" y="106" text-anchor="middle" font-family="Manrope,sans-serif" font-size="11" font-weight="800" fill="#ccc">FastAPI</text>
+        <rect x="153" y="68" width="115" height="56" rx="5" fill="#141414" stroke="#3a3a3a" stroke-width="1.5"/>
+        <text x="211" y="89" text-anchor="middle" font-family="Manrope,sans-serif" font-size="7.5" font-weight="700" fill="#555" letter-spacing="1.2">API + SESSION</text>
+        <text x="211" y="106" text-anchor="middle" font-family="Manrope,sans-serif" font-size="11" font-weight="800" fill="#ccc">FastAPI</text>
 
-        <line x1="233" y1="96" x2="256" y2="96" stroke="#444" stroke-width="1.5" marker-end="url(#arr-gray)"/>
+        <line x1="268" y1="96" x2="323" y2="96" stroke="#444" stroke-width="1.5" marker-end="url(#arr-gray)"/>
 
         <!-- Haiku (blue — AI model) -->
-        <rect x="258" y="68" width="112" height="56" rx="5" fill="#0d1a30" stroke="#4361ee" stroke-width="1.5"/>
-        <text x="314" y="89" text-anchor="middle" font-family="Manrope,sans-serif" font-size="7.5" font-weight="700" fill="#6b8eee" letter-spacing="1.2">CLASSIFY</text>
-        <text x="314" y="106" text-anchor="middle" font-family="Manrope,sans-serif" font-size="11" font-weight="800" fill="#fff">Haiku</text>
-        <text x="314" y="119" text-anchor="middle" font-family="Manrope,sans-serif" font-size="7.5" fill="rgba(255,255,255,0.35)">Intent classifier</text>
+        <rect x="325" y="68" width="112" height="56" rx="5" fill="#0d1a30" stroke="#4361ee" stroke-width="1.5"/>
+        <text x="381" y="89" text-anchor="middle" font-family="Manrope,sans-serif" font-size="7.5" font-weight="700" fill="#6b8eee" letter-spacing="1.2">CLASSIFY</text>
+        <text x="381" y="106" text-anchor="middle" font-family="Manrope,sans-serif" font-size="11" font-weight="800" fill="#fff">Haiku</text>
+        <text x="381" y="119" text-anchor="middle" font-family="Manrope,sans-serif" font-size="7.5" fill="rgba(255,255,255,0.35)">Observation match</text>
 
-        <line x1="370" y1="96" x2="392" y2="96" stroke="#4361ee" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+        <line x1="437" y1="96" x2="492" y2="96" stroke="#4361ee" stroke-width="1.5" marker-end="url(#arr-blue)"/>
 
-        <!-- Intent Router -->
-        <rect x="394" y="68" width="112" height="56" rx="5" fill="#0d1a30" stroke="#4361ee" stroke-width="1.5"/>
-        <text x="450" y="89" text-anchor="middle" font-family="Manrope,sans-serif" font-size="7.5" font-weight="700" fill="#6b8eee" letter-spacing="1.2">ROUTE</text>
-        <text x="450" y="106" text-anchor="middle" font-family="Manrope,sans-serif" font-size="11" font-weight="800" fill="#fff">Intent Router</text>
-        <text x="450" y="119" text-anchor="middle" font-family="Manrope,sans-serif" font-size="7.5" fill="rgba(255,255,255,0.35)">SOP selection</text>
+        <!-- Journey + Tool Subset -->
+        <rect x="494" y="68" width="122" height="56" rx="5" fill="#0d1a30" stroke="#4361ee" stroke-width="1.5"/>
+        <text x="555" y="89" text-anchor="middle" font-family="Manrope,sans-serif" font-size="7.5" font-weight="700" fill="#6b8eee" letter-spacing="1.2">ASSEMBLE</text>
+        <text x="555" y="104" text-anchor="middle" font-family="Manrope,sans-serif" font-size="10.5" font-weight="800" fill="#fff">Journey</text>
+        <text x="555" y="118" text-anchor="middle" font-family="Manrope,sans-serif" font-size="7.5" fill="rgba(255,255,255,0.35)">+ scoped tools</text>
 
-        <line x1="506" y1="96" x2="528" y2="96" stroke="#4361ee" stroke-width="1.5" marker-end="url(#arr-blue)"/>
-
-        <!-- Scoped SOP + Tool Subset -->
-        <rect x="530" y="68" width="122" height="56" rx="5" fill="#0d1a30" stroke="#4361ee" stroke-width="1.5"/>
-        <text x="591" y="89" text-anchor="middle" font-family="Manrope,sans-serif" font-size="7.5" font-weight="700" fill="#6b8eee" letter-spacing="1.2">ASSEMBLE</text>
-        <text x="591" y="104" text-anchor="middle" font-family="Manrope,sans-serif" font-size="10.5" font-weight="800" fill="#fff">Scoped SOP</text>
-        <text x="591" y="118" text-anchor="middle" font-family="Manrope,sans-serif" font-size="7.5" fill="rgba(255,255,255,0.35)">+ tool subset</text>
-
-        <line x1="652" y1="96" x2="672" y2="96" stroke="#4361ee" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+        <line x1="616" y1="96" x2="672" y2="96" stroke="#4361ee" stroke-width="1.5" marker-end="url(#arr-blue)"/>
 
         <!-- ── SONNET: large central box ── -->
         <rect x="674" y="28" width="190" height="228" rx="7" fill="#090f1e" stroke="#4361ee" stroke-width="2"/>
@@ -1067,22 +1122,32 @@
         <!-- Right column -->
         <text x="775" y="314" font-family="'Courier New',monospace" font-size="7" fill="rgba(52,211,153,0.7)">verify_otp</text>
         <text x="775" y="326" font-family="'Courier New',monospace" font-size="7" fill="rgba(52,211,153,0.7)">initiate_return</text>
-        <text x="775" y="338" font-family="'Courier New',monospace" font-size="7" fill="rgba(52,211,153,0.7)">get_policy</text>
+        <text x="775" y="338" font-family="'Courier New',monospace" font-size="7" fill="rgba(52,211,153,0.7)">search_knowledge</text>
+
+        <!-- ── KNOWLEDGE BASE (right of tools, RAG) ── -->
+        <!-- Forward arrow: tools → KB (query) -->
+        <line x1="862" y1="308" x2="876" y2="308" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arr-purple)"/>
+        <!-- Backward arrow: KB → tools (results) -->
+        <line x1="876" y1="320" x2="862" y2="320" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arr-purple)"/>
+
+        <rect x="878" y="271" width="162" height="90" rx="5" fill="#120a24" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="959" y="284" text-anchor="middle" font-family="Manrope,sans-serif" font-size="7.5" font-weight="700" fill="#a78bfa" letter-spacing="1.2">RAG</text>
+        <text x="959" y="297" text-anchor="middle" font-family="Manrope,sans-serif" font-size="10.5" font-weight="800" fill="#fff">Knowledge Base</text>
+        <line x1="888" y1="303" x2="1030" y2="303" stroke="#a78bfa" stroke-width="0.5" stroke-opacity="0.25"/>
+        <text x="898" y="314" font-family="'Courier New',monospace" font-size="7" fill="rgba(167,139,250,0.7)">ChromaDB</text>
+        <text x="898" y="326" font-family="'Courier New',monospace" font-size="7" fill="rgba(167,139,250,0.7)">all-MiniLM-L6-v2</text>
+        <text x="898" y="338" font-family="'Courier New',monospace" font-size="7" fill="rgba(167,139,250,0.7)">17 doc chunks</text>
 
         <!-- ── SESSION MEMORY (below FastAPI, dashed) ── -->
         <!-- Vertical connector FastAPI → Session Memory -->
-        <line x1="175" y1="125" x2="175" y2="158" stroke="#2a2a2a" stroke-width="1" stroke-dasharray="4,3"/>
-        <rect x="118" y="159" width="115" height="42" rx="5" fill="#111" stroke="#2e2e2e" stroke-width="1" stroke-dasharray="4,3"/>
-        <text x="175" y="177" text-anchor="middle" font-family="Manrope,sans-serif" font-size="7" font-weight="700" fill="#3a3a3a" letter-spacing="1.2">MEMORY</text>
-        <text x="175" y="192" text-anchor="middle" font-family="Manrope,sans-serif" font-size="9.5" font-weight="700" fill="#555">Session State</text>
+        <line x1="211" y1="125" x2="211" y2="158" stroke="#2a2a2a" stroke-width="1" stroke-dasharray="4,3"/>
+        <rect x="153" y="159" width="115" height="42" rx="5" fill="#111" stroke="#2e2e2e" stroke-width="1" stroke-dasharray="4,3"/>
+        <text x="211" y="177" text-anchor="middle" font-family="Manrope,sans-serif" font-size="7" font-weight="700" fill="#3a3a3a" letter-spacing="1.2">MEMORY</text>
+        <text x="211" y="192" text-anchor="middle" font-family="Manrope,sans-serif" font-size="9.5" font-weight="700" fill="#555">Session State</text>
 
         <!-- Dashed line: Session Memory → Sonnet (long horizontal path) -->
-        <path d="M 233 180 Q 450 180 672 142" stroke="#2a2a2a" stroke-width="1" fill="none" stroke-dasharray="5,4" marker-end="url(#arr-dashed)"/>
+        <path d="M 268 180 Q 470 180 672 142" stroke="#2a2a2a" stroke-width="1" fill="none" stroke-dasharray="5,4" marker-end="url(#arr-dashed)"/>
 
-        <!-- ── TOOLS CAPTION (right of tools box) ── -->
-        <text x="872" y="300" font-family="Manrope,sans-serif" font-size="8" font-style="italic" fill="rgba(255,255,255,0.32)">Customer-specific answers are</text>
-        <text x="872" y="312" font-family="Manrope,sans-serif" font-size="8" font-style="italic" fill="rgba(255,255,255,0.32)">grounded in mocked Bookly tools,</text>
-        <text x="872" y="324" font-family="Manrope,sans-serif" font-size="8" font-style="italic" fill="rgba(255,255,255,0.32)">not model memory.</text>
       </svg>
     </div>
 
@@ -1129,7 +1194,7 @@
           <div class="decision-rows">
             <div class="decision-row">
               <span class="decision-row-label">Choice</span>
-              <span class="decision-row-text">Haiku classifies intent, Sonnet handles reasoning and action</span>
+              <span class="decision-row-text">Haiku matches customer messages against journey observations, Sonnet handles reasoning and action</span>
             </div>
             <div class="decision-row">
               <span class="decision-row-label">Tradeoff</span>
@@ -1143,15 +1208,15 @@
         </div>
 
         <div class="decision-card reveal">
-          <div class="decision-title">Goal-Based SOPs, Scoped by Intent</div>
+          <div class="decision-title">Goal-Based Journeys, Unlocked by Observation</div>
           <div class="decision-rows">
             <div class="decision-row">
               <span class="decision-row-label">Choice</span>
-              <span class="decision-row-text">Each intent gets its own goal-oriented SOP and allowed tool subset</span>
+              <span class="decision-row-text">Each journey carries its own goal, rules, policies, and scoped tools — unlocked by what the agent observes</span>
             </div>
             <div class="decision-row">
               <span class="decision-row-label">Tradeoff</span>
-              <span class="decision-row-text">More prompt and config surface to maintain as intents grow</span>
+              <span class="decision-row-text">More config surface to maintain as journeys grow</span>
             </div>
             <div class="decision-row">
               <span class="decision-row-label">Rationale</span>
@@ -1190,11 +1255,15 @@
           <div class="prod2-items">
             <div>
               <div class="prod2-item-title">Persistent Sessions</div>
-              <div class="prod2-item-desc">Replace in-memory state with Redis or DynamoDB — survives restarts, enables horizontal scaling, and is a hard requirement before multi-instance deploy.</div>
+              <div class="prod2-item-desc">Replace in-memory state with Redis or DynamoDB — session context persists across different channels, so the agent remembers returning customers and can personalize every interaction.</div>
             </div>
             <div>
               <div class="prod2-item-title">Structured Observability</div>
               <div class="prod2-item-desc">Trace every intent decision, tool latency, and token spend — without this, production failures are invisible until a customer notices.</div>
+            </div>
+            <div>
+              <div class="prod2-item-title">PII Detection & Encryption</div>
+              <div class="prod2-item-desc">Customer data in conversation history and tool results must be scrubbed and encrypted before logging — non-negotiable for GDPR and CCPA compliance.</div>
             </div>
           </div>
         </div>
@@ -1206,7 +1275,11 @@
           <div class="prod2-items">
             <div>
               <div class="prod2-item-title">Prompt Caching</div>
-              <div class="prod2-item-desc">Cache stable system prompts and SOPs to reduce repeated input-token cost on every turn at scale.</div>
+              <div class="prod2-item-desc">Cache stable system prompts and journeys to reduce repeated input-token cost on every turn at scale.</div>
+            </div>
+            <div>
+              <div class="prod2-item-title">Fine-tuned Specialist Models</div>
+              <div class="prod2-item-desc">Replace expensive general-purpose model calls with fine-tuned models for high-frequency narrow tasks — intent detection, abuse detection, PII screening — reducing cost and latency at volume.</div>
             </div>
           </div>
         </div>
@@ -1218,11 +1291,11 @@
           <div class="prod2-items">
             <div>
               <div class="prod2-item-title">RAG Knowledge Base</div>
-              <div class="prod2-item-desc">Vector search over policy docs — improves accuracy on edge-case queries and lets policy content update without code changes.</div>
+              <div class="prod2-item-desc">A production RAG implementation replaces this with a persistent vector store, dedicated embedding API, hybrid retrieval, and automated ingestion.</div>
             </div>
             <div>
               <div class="prod2-item-title">LLM-as-a-Judge Evals</div>
-              <div class="prod2-item-desc">Automated eval pipeline scores responses on compliance, accuracy, and tone after every prompt change.</div>
+              <div class="prod2-item-desc">Automated eval pipeline scores responses on compliance, accuracy, and tone as part of CI/CD before every release — paired with journey simulations that exercise each journey's goal, policies, and tool paths end-to-end.</div>
             </div>
           </div>
         </div>
@@ -1435,11 +1508,97 @@
 
 
     /* ============================================
+       SPEAKER NOTES
+       ============================================ */
+    const NOTES = [
+      /* Slide 1 — Title */
+      `<p>This project is a customer support agent built for Bookly, a fictional online bookstore. The goal was to go beyond a basic chatbot and demonstrate how a well-designed AI agent handles real support workflows — order lookups, returns, exchanges, and policy questions — with identity verification, scoped tools, and real-time streaming.</p>
+<p>What makes this interesting isn't just the interface. It's the architecture underneath: a two-model system where a lightweight model classifies intent and a powerful model reasons and acts. The agent sees partial context about a customer and figures out what to do — it doesn't just pattern-match to a canned response.</p>
+<p><strong>Stack is intentionally minimal</strong> — Python, FastAPI, raw Anthropic SDK. No agent framework, no abstraction layer. Every piece of the loop is visible: tool calls, streaming behavior, error handling. This was a deliberate choice and one I'll cover in the decisions slide.</p>`,
+
+      /* Slide 2 — Thesis */
+      `<p>The central thesis here is that <strong>great customer experience is a reasoning problem, not a rules problem.</strong> Most support automation fails because it's built like a decision tree — it can only handle the exact scenarios someone anticipated when writing the rules. A customer who phrases things differently, or has an edge case, falls through.</p>
+<p>The alternative is an agent that understands the goal, knows what constraints apply, and reasons toward a resolution. When a customer says "the wrong edition arrived," the agent doesn't pattern-match to a script — it understands they have a delivered order, reasons that they might want an exchange or return, gathers the minimum context it needs, confirms before acting, and resolves.</p>
+<p>The three points on the right are what make this concrete. <strong>Goal-based Journeys</strong> — each journey is a self-contained unit unlocked by an observation, with its own goal, rules, policies, and tools. The agent reasons toward the goal; it doesn't follow a script. <strong>Bounded autonomy</strong> means the agent can reason freely within guardrails: identity must be verified before order access, eligibility must be confirmed before a return. <strong>Grounded responses</strong> pull from real tool results rather than model memory — that's the primary defense against hallucination in a support context.</p>`,
+
+      /* Slide 3 — Architecture */
+      `<p>Let me walk through what actually happens when a customer sends a message. <strong>FastAPI</strong> receives it and retrieves the session history — this is how the agent remembers earlier turns in the conversation. That context travels forward through every step.</p>
+<p><strong>Haiku</strong>, Anthropic's fastest model, classifies the intent in milliseconds: is this an order question, a return, a policy question, or something unclear? It's a cheap call — we're not asking Haiku to reason, just categorize. The <strong>Journey Router</strong> uses that classification to select the matching journey and assemble the right context for Sonnet: the goal, rules, policies, and scoped tools for that journey. This scoping matters — a customer asking about shipping policy doesn't need access to <code>initiate_return</code>.</p>
+<p><strong>Sonnet then runs the ReAct loop</strong> — think, act, observe, repeat. It decides whether to call a tool or respond directly. If it calls a tool, FastAPI executes it against the mocked Bookly backend and returns the result. Sonnet observes the result and loops until it has enough to respond. The two-way arrow between Sonnet and the tools reflects this back-and-forth within a single turn.</p>
+<p>The dashed line from Session Memory to Sonnet is intentional — it's lightweight in this prototype, in-memory state in a Python dict. In production you'd replace that with Redis for persistence and horizontal scaling.</p>`,
+
+      /* Slide 4 — Engineering Decisions */
+      `<p>Three decisions shaped this system, and each involved a real tradeoff worth explaining.</p>
+<p><strong>No agent framework.</strong> Libraries like LangChain abstract away the tool loop. That's convenient until something breaks — then you're debugging through layers of abstraction you didn't write. Using the raw SDK means more code, but every piece of behavior is explicit: how tool results feed back into context, how streaming interacts with tool calls, how errors surface. For a support system where incorrect behavior has direct customer impact, that transparency matters.</p>
+<p><strong>Two models.</strong> If you used Sonnet for everything, every turn would pay the full cost of a powerful model just to figure out "this is an order status question." Haiku does the cheap classification in one fast call, then Sonnet spends its capacity on the actual reasoning and tool use. The extra model call costs less than the savings on every Sonnet call that no longer has to figure out intent from scratch.</p>
+<p><strong>Goal-based Journeys.</strong> The alternative is step-by-step prompt scripts — "first ask for email, then send OTP, then call get_orders." Those break the moment a customer doesn't follow the expected sequence, or the conversation history already has context that makes a step redundant. Each journey tells Claude what observation unlocks it, what goal to achieve, what rules and policies apply, and which tools are in scope. Claude reasons toward the goal. That's what makes the agent resilient to the variability of real customer behavior.</p>`,
+
+      /* Slide 5 — Production Readiness */
+      `<p>This is a prototype, and it's honest about that. The question of what I'd do differently for production is where the real engineering lives.</p>
+<p><strong>Cost and latency.</strong> Prompt caching alone would cut token costs by around 90% on the system prompt — it's the same across every turn for every user, and Anthropic caches it after the first call. That's an immediate, near-zero-effort win at scale. Async I/O in FastAPI means the server isn't blocking on each Anthropic API call — you can handle thousands of concurrent sessions without needing proportional compute.</p>
+<p><strong>Scale and reliability.</strong> The biggest gap in this prototype is in-memory session state — it dies on restart and can't scale horizontally. Redis solves that: persistent, fast, and horizontally scalable. The current knowledge base is hardcoded policy text. In production you'd replace that with a RAG pipeline over a vector store — the policy team can update documents without touching code, and semantic search handles paraphrased customer questions that exact-match lookup would miss.</p>
+<p><strong>Quality and trust.</strong> This is what keeps a support system safe over time. Structured observability means every intent decision, tool call, token count, and latency is logged — you can identify a bad response pattern in minutes. <strong>LLM-as-a-Judge evals</strong> automate quality assurance: after every prompt change, a pipeline runs test conversations through the agent and scores them on accuracy, policy compliance, and tone. That's how you ship prompt updates without accidentally breaking a workflow that was working.</p>`
+    ];
+
+    class SpeakerNotes {
+      constructor(presentation) {
+        this.presentation = presentation;
+        this.isOpen = false;
+        this.panel = document.getElementById('notesPanel');
+        this.body  = document.getElementById('notesBody');
+
+        document.addEventListener('keydown', e => {
+          if (e.target.getAttribute('contenteditable')) return;
+          if (e.key === 'n' || e.key === 'N') this.toggle();
+          if (e.key === 'Escape' && this.isOpen) this.close();
+        });
+
+        // Update notes when slide changes
+        const orig = this.presentation.updateProgress.bind(this.presentation);
+        this.presentation.updateProgress = (idx) => {
+          orig(idx);
+          if (this.isOpen) this.render(idx);
+        };
+      }
+
+      render(idx) {
+        this.body.innerHTML = `<div class="notes-text">${NOTES[idx] || ''}</div>`;
+      }
+
+      toggle() { this.isOpen ? this.close() : this.open(); }
+
+      open() {
+        this.isOpen = true;
+        this.render(this.presentation.current);
+        this.panel.classList.add('open');
+        document.body.classList.add('notes-open');
+      }
+
+      close() {
+        this.isOpen = false;
+        this.panel.classList.remove('open');
+        document.body.classList.remove('notes-open');
+      }
+    }
+
+
+    /* ============================================
        INIT
        ============================================ */
     const presentation = new SlidePresentation();
     const editor = new InlineEditor();
+    const notes  = new SpeakerNotes(presentation);
   </script>
+
+  <!-- Speaker notes panel -->
+  <div class="notes-panel" id="notesPanel">
+    <div class="notes-panel-header">
+      <span class="notes-panel-label">Speaker Notes</span>
+      <span class="notes-panel-close">N or Esc to close</span>
+    </div>
+    <div id="notesBody"></div>
+  </div>
+  <div class="notes-hint">N — speaker notes</div>
 
 </body>
 </html>
