@@ -161,10 +161,11 @@ BOOKLY_AGENT = AgentConfig(
             observation="Customer is asking about shipping times, payment methods, password reset, or general store policies.",
             goal="Give the customer an accurate answer to their policy question.",
             rules=[
-                "Always call get_policy with the relevant topic before answering.",
-                "Never answer policy questions from memory.",
+                "Always call search_knowledge with the customer's question before answering.",
+                "Never answer policy questions from memory — always search first.",
+                "If the search results do not contain a clear answer, say so honestly and offer to connect them with support.",
             ],
-            tools=["get_policy"],
+            tools=["search_knowledge"],
         ),
         Journey(
             name="Unclear Request",

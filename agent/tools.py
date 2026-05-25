@@ -1,5 +1,6 @@
 from data.orders import get_orders_by_contact, initiate_return_request, initiate_exchange_request
 from data.policies import get_policy_text
+from data.knowledge import search_knowledge as _search_knowledge
 from data.auth import send_otp as _send_otp, verify_otp as _verify_otp
 
 TOOL_DEFINITIONS = [
@@ -119,6 +120,24 @@ TOOL_DEFINITIONS = [
             "required": ["topic"],
         },
     },
+    {
+        "name": "search_knowledge",
+        "description": (
+            "Search Bookly's knowledge base to answer customer questions about policies, "
+            "shipping, returns, payments, or account topics. "
+            "Use this instead of answering from memory — always search first."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "The customer's question or topic to search for",
+                }
+            },
+            "required": ["query"],
+        },
+    },
 ]
 
 
@@ -136,6 +155,7 @@ _TOOL_MAP = {
     "initiate_exchange": lambda i: initiate_exchange_request(i["order_id"], i["reason"]),
     "initiate_return":   lambda i: initiate_return_request(i["order_id"], i["reason"]),
     "get_policy":        lambda i: get_policy_text(i["topic"]),
+    "search_knowledge":  lambda i: _search_knowledge(i["query"]),
 }
 
 
