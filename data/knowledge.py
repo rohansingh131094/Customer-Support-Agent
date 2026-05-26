@@ -72,7 +72,7 @@ DOCUMENTS = [
         "id": "returns-damaged",
         "text": (
             "If your item arrived damaged or defective, you are eligible for a full refund or a free exchange "
-            "regardless of the item's condition. Contact support with your order ID and a description of the damage."
+            "regardless of the item's condition."
         ),
         "topic": "returns",
     },
@@ -179,5 +179,5 @@ def search_knowledge(query: str, n_results: int = 3) -> str:
     results = collection.query(query_texts=[query], n_results=min(n_results, len(DOCUMENTS)))
     docs = results.get("documents", [[]])[0]
     if not docs:
-        return "No relevant information found in the Bookly knowledge base."
+        return json.dumps({"success": False, "error": "No relevant information found in the Bookly knowledge base."})
     return json.dumps({"results": docs})

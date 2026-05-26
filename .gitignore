@@ -9,3 +9,6 @@ venv/
 dist/
 .claude/
 CLAUDE.md
+.claude-design/
+.understand-anything/
+AGENTS.md

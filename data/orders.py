@@ -18,12 +18,13 @@ ORDERS = {
 
     # John Doe's orders
     "BK-3001": {
-        "status": "shipped",
-        "tracking_number": "TRK-667788",
-        "estimated_delivery": "2026-06-02",
+        "status": "delayed",
+        "tracking_number": "1Z9V84W30342958701",
+        "original_delivery": "2026-05-29",
         "items": ["Atomic Habits"],
         "total": "$16.99",
         "customer": "John Doe",
+        "delay_reason": "Delayed at UPS Memphis, TN facility due to severe weather. New estimated delivery: June 2nd.",
     },
     "BK-3002": {
         "status": "delivered",
@@ -52,7 +53,7 @@ def _format_order(order_id: str, order: dict) -> dict:
     elif order["status"] == "delayed":
         entry["tracking_number"] = order["tracking_number"]
         entry["original_delivery"] = order["original_delivery"]
-        entry["note"] = "Shipment is delayed — flagged as stuck in transit by carrier."
+        entry["delay_reason"] = order.get("delay_reason", "Shipment is delayed — flagged as stuck in transit by carrier.")
     return entry
 
 
@@ -61,7 +62,8 @@ def get_orders_by_contact(contact: str) -> str:
     from data.auth import CUSTOMERS
     customer = CUSTOMERS.get(contact.strip().lower())
     if not customer:
-        return f"No account found for '{contact}'."
+        return json.dumps({"success": False, "error": f"No account found for '{contact}'."})
+
     orders = [_format_order(oid, ORDERS[oid]) for oid in customer["orders"] if oid in ORDERS]
     return json.dumps({"customer": customer["name"], "orders": orders})
 
