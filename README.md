@@ -62,7 +62,8 @@ pip install -r requirements.txt
 
 ```bash
 # 4. Add your Anthropic API key
-echo "ANTHROPIC_API_KEY=your_api_key_here" > .env
+cp .env.example .env
+# then open .env and replace with your actual key
 ```
 
 ## Run
@@ -80,15 +81,18 @@ Open [http://localhost:8000](http://localhost:8000) in your browser.
 | Email | Phone | Name | Orders |
 |---|---|---|---|
 | sarah@gmail.com | 415-696-3967 | Sarah Chen | BK-2001 (delivered May 27), BK-2002 (delayed, est. Jun 1) |
-| john@gmail.com | 332-275-3252 | John Doe | BK-3001 (shipped, est. Jun 2), BK-3002 (delivered May 27) |
+| john@gmail.com | 332-275-3252 | John Doe | BK-3001 (delayed, weather hold, new est. Jun 2), BK-3002 (delivered May 27) |
 
 Once verified, the agent has access to the customer's full profile — preferred name, member since, address on file, and card on file.
 
 | Scenario | How to trigger |
 |---|---|
-| Return flow | Authenticate as Sarah or John → "I want to return my order" |
+| Order status | Authenticate as Sarah or John → "Where is my order?" |
 | Delayed order | Authenticate as Sarah → ask about orders |
-| Shipped order | Authenticate as John → ask about orders |
+| Delayed order (weather) | Authenticate as John → ask about orders |
+| Return flow | Authenticate as Sarah or John → "I want to return my order" |
+| Exchange flow | Authenticate → mention a damaged or wrong item |
+| Update shipping address | Authenticate → "I want to update my shipping address" |
 | Policy question | "How long does shipping take?" — no auth needed |
 | Escalation friction | "I want to speak to a human" → agent tries to help first |
 | Out-of-scope | "What's the weather like?" |
