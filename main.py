@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 
-from agent.intent import classify_journey
+from agent.intent import resolve_journey
 from agent.journeys import build_journey, BOOKLY_AGENT
 from agent.loop import stream_agent
 from agent.sessions import get_history, get_intent, set_intent, update_history
@@ -33,16 +33,7 @@ def chat(req: ChatRequest):
     if not req.message.strip():
         raise HTTPException(status_code=400, detail="Message cannot be empty.")
 
-    # Classify by matching customer message against journey observations
-    current_journey = get_intent(req.session_id)
-    new_journey = classify_journey(req.message)
-
-    if new_journey not in ("Unclear Request", "Out of Scope"):
-        journey_name = new_journey
-    else:
-        # Ambiguous follow-up — keep current journey if one exists, otherwise use new
-        journey_name = current_journey if current_journey else new_journey
-
+    journey_name = resolve_journey(req.message, get_intent(req.session_id))
     set_intent(req.session_id, journey_name)
 
     system_prompt, tools = build_journey(journey_name)

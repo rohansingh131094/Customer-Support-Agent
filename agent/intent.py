@@ -31,3 +31,11 @@ def classify_journey(message: str) -> str:
     )
     name = response.content[0].text.strip()
     return name if name in valid_names else "Unclear Request"
+
+
+def resolve_journey(message: str, current_journey: str | None) -> str:
+    classification = classify_journey(message)
+    is_uncertain = classification in ("Unclear Request", "Out of Scope")
+    if is_uncertain and current_journey:
+        return current_journey
+    return classification
