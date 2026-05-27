@@ -108,7 +108,6 @@ BOOKLY_AGENT = AgentConfig(
     global_policies=[
         "Bookly operates as an online-only bookstore — there are no physical store locations.",
         "Customer data is never shared with third parties outside of order fulfillment.",
-        "All prices are in USD and include applicable taxes at checkout.",
     ],
     journeys=[
         Journey(
