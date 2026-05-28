@@ -2,6 +2,8 @@
 
 ## Demo
 
+[▶ Watch the demo](https://screen.studio/share/Z4v65jBv)
+
 [![Watch the demo](static/demo-thumbnail.png)](https://screen.studio/share/Z4v65jBv)
 
 A conversational AI customer support agent for Bookly, a fictional online bookstore. Built with Python, FastAPI, and the Anthropic Claude API.
