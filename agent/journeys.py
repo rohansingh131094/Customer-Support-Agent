@@ -169,8 +169,8 @@ BOOKLY_AGENT = AgentConfig(
             tools=["send_otp", "verify_otp", "update_shipping_address", "update_email"],
         ),
         Journey(
-            name="Policy Questions",
-            observation="Customer is asking about shipping times, payment methods, password reset, or general store policies.",
+            name="Bookly FAQs",
+            observation="Customer is asking about shipping times, payment methods, password reset, or general Bookly policies.",
             goal="Give the customer an accurate answer to their policy question.",
             rules=[
                 "Always call search_knowledge with the customer's question before answering.",
