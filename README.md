@@ -1,5 +1,9 @@
 # Bookly Support Agent
 
+## Slides
+
+[▶ View presentation](https://rohansingh131094.github.io/Customer-Support-Agent/bookly-slides.html)
+
 ## Demo
 
 [▶ Watch the demo](https://screen.studio/share/Z4v65jBv)
