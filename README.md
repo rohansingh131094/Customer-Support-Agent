@@ -111,7 +111,7 @@ Once verified, the agent has access to the customer's full profile — preferred
 ├── data/
 │   ├── orders.py           # Mock order database + return/exchange logic
 │   ├── auth.py             # Mock customer directory + OTP verification
-│   └── knowledge.py        # RAG knowledge base (ChromaDB)
+│   └── knowledge.py        # RAG knowledge base (ChromaDB, 17 policy chunks)
 ├── static/
 │   └── index.html          # Chat UI
 ├── requirements.txt
