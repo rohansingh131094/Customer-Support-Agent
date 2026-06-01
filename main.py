@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 
-from agent.intent import resolve_journey
+from agent.classify_intent import resolve_journey
 from agent.journeys import build_journey, BOOKLY_AGENT
 from agent.loop import stream_agent
 from agent.sessions import get_history, get_intent, set_intent, update_history
