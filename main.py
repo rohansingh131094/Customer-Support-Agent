@@ -12,7 +12,7 @@ from pydantic import BaseModel
 from agent.classify_intent import resolve_journey
 from agent.journeys import build_journey, BOOKLY_AGENT
 from agent.agent_loop import stream_agent
-from agent.sessions import get_history, get_intent, set_intent, update_history
+from agent.sessions import get_history, get_intent, set_intent, get_pending_journey, clear_pending_journey, update_history
 
 app = FastAPI(title="Bookly Support Agent")
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -35,8 +35,9 @@ def chat(req: ChatRequest):
 
     journey_name = resolve_journey(req.message, get_intent(req.session_id))
     set_intent(req.session_id, journey_name)
+    pending_journey = get_pending_journey(req.session_id)
 
-    system_prompt, tools = build_journey(journey_name)
+    system_prompt, tools = build_journey(journey_name, pending_journey)
     history = get_history(req.session_id)
 
     matched = next((j for j in BOOKLY_AGENT.journeys if j.name == journey_name), None)

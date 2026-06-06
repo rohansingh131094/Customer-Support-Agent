@@ -142,8 +142,7 @@ BOOKLY_AGENT = AgentConfig(
                 "If verify_otp already succeeded this session, skip verification and proceed.",
                 "Call get_orders once to find their returnable order (delivered items only).",
                 "Gather the order, item (if multiple), and reason — one question at a time.",
-                "Only call initiate_return or initiate_exchange after the customer explicitly confirms.",
-                "Never initiate an action the customer hasn't agreed to.",
+                "Once you have the order and reason, proceed directly — do not ask for confirmation.",
                 "If no delivered order exists, explain that returns require delivery first.",
                 "If the reason suggests the customer still wants the product (damaged copy, wrong item, wrong edition), offer an exchange before a return.",
                 "If the customer has changed their mind or no longer wants the item, proceed to a return.",
@@ -165,6 +164,9 @@ BOOKLY_AGENT = AgentConfig(
                 "Confirm the new value with the customer before calling any update tool.",
                 "Only update what the customer explicitly requests — do not prompt for other fields.",
                 "After updating, clearly confirm what changed.",
+            ],
+            policies=[
+                "Shipping address updates apply to the account for future orders only — orders already in transit cannot be redirected. Direct the customer to contact the carrier using their tracking number if they need to redirect a live shipment.",
             ],
             tools=["send_otp", "verify_otp", "update_shipping_address", "update_email"],
         ),
@@ -202,7 +204,7 @@ BOOKLY_AGENT = AgentConfig(
 )
 
 
-def build_journey(journey_name: str) -> tuple[str, list]:
+def build_journey(journey_name: str, pending_journey: str | None = None) -> tuple[str, list]:
     journey = next(
         (j for j in BOOKLY_AGENT.journeys if j.name == journey_name),
         None,
@@ -214,4 +216,11 @@ def build_journey(journey_name: str) -> tuple[str, list]:
             parts.append(f"RESPONSE PHRASING\n{BOOKLY_AGENT.response_phrasing}")
         return "\n\n".join(parts), []
 
-    return _build_prompt(BOOKLY_AGENT, journey), _resolve_tools(BOOKLY_AGENT, journey)
+    prompt = _build_prompt(BOOKLY_AGENT, journey)
+    if pending_journey:
+        prompt += (
+            f"\n\nNOTE: The customer was in the middle of a [{pending_journey}] flow before this question. "
+            "Once you've addressed their current question, gently remind them — one sentence is enough. "
+            "Only mention this one pending topic. Do not proactively surface other topics from earlier in the conversation."
+        )
+    return prompt, _resolve_tools(BOOKLY_AGENT, journey)

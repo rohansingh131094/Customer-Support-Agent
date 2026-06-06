@@ -2,7 +2,7 @@ ORDERS = {
     # Sarah Chen's orders
     "BK-2001": {
         "status": "delivered",
-        "delivered_on": "2026-05-27",
+        "delivered_on": "2026-06-06",
         "items": ["The Great Gatsby", "1984"],
         "total": "$24.98",
         "customer": "Sarah Chen",
@@ -10,7 +10,7 @@ ORDERS = {
     "BK-2002": {
         "status": "delayed",
         "tracking_number": "TRK-334455",
-        "original_delivery": "2026-06-01",
+        "original_delivery": "2026-06-10",
         "items": ["Dune Messiah"],
         "total": "$14.99",
         "customer": "Sarah Chen",
@@ -20,15 +20,15 @@ ORDERS = {
     "BK-3001": {
         "status": "delayed",
         "tracking_number": "1Z9V84W30342958701",
-        "original_delivery": "2026-05-29",
+        "original_delivery": "2026-06-10",
         "items": ["Atomic Habits"],
         "total": "$16.99",
         "customer": "John Doe",
-        "delay_reason": "Delayed at UPS Memphis, TN facility due to severe weather. New estimated delivery: June 2nd.",
+        "delay_reason": "Delayed at UPS Memphis, TN facility due to severe weather. New estimated delivery: June 10th.",
     },
     "BK-3002": {
         "status": "delivered",
-        "delivered_on": "2026-05-27",
+        "delivered_on": "2026-06-06",
         "items": ["Deep Work", "Digital Minimalism"],
         "total": "$31.98",
         "customer": "John Doe",
